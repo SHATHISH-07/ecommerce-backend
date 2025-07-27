@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-import { productModel } from "../models/productModel";
+import productModel from "../models/productModel";
 import { Product, FetchProductsResponse } from "../types";
 
 dotenv.config();

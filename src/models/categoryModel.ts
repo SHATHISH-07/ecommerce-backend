@@ -29,5 +29,4 @@ const categorySchema: Schema<CategoryDoc> = new Schema(
     }
 );
 
-export const categoryModel: Model<CategoryDoc> =
-    mongoose.models.Category || mongoose.model<CategoryDoc>("Category", categorySchema);
+export default mongoose.models.Category || mongoose.model<CategoryDoc>("Category", categorySchema);

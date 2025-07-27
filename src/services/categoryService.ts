@@ -1,5 +1,5 @@
-import { categoryModel } from "../models/categoryModel";
-import { productModel } from "../models/productModel";
+import categoryModel from "../models/categoryModel";
+import productModel from "../models/productModel";
 import { Category, FetchProductsResponse } from "../types";
 
 export const fetchCategories = async (): Promise<Category[]> => {
@@ -38,7 +38,7 @@ export const fetchCategoriesByCategorySlug = async (
     categorySlug: string
 ): Promise<Category[]> => {
     try {
-        const categories = await categoryModel.find({ slug: categorySlug }).lean();
+        const categories = await categoryModel.find({ slug: categorySlug }).lean<Category[]>();
 
         return categories;
     } catch (error) {

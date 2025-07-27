@@ -26,7 +26,7 @@ const context = async ({ req }: ContextType): Promise<MyContext> => {
 
         try {
             const decodedToken = jwt.verify(token, secret) as TokenPayload;
-            console.log("Decoded Token:", decodedToken);
+            // console.log("Decoded Token:", decodedToken);
 
             const userId = decodedToken.id;
             if (!userId) {
@@ -40,7 +40,7 @@ const context = async ({ req }: ContextType): Promise<MyContext> => {
                 return {};
             }
 
-            console.log("Current User ID:", currentUser.id);
+            // console.log("Current User ID:", currentUser.id);
 
             return {
                 userId: currentUser.id,

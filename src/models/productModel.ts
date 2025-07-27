@@ -4,7 +4,6 @@ import { Product, Dimensions, Meta, Review } from "../types";
 
 type ProductDoc = Product & Document;
 
-
 const dimensionsSchema = new Schema<Dimensions>(
     {
         width: Number,
@@ -37,7 +36,7 @@ const metaSchema = new Schema<Meta>(
 
 const productSchema = new Schema<ProductDoc>(
     {
-        id: { type: Number, required: true, unique: true },
+        id: { type: Number, unique: true },
         title: { type: String, required: true },
         description: String,
         category: String,
@@ -67,11 +66,24 @@ const productSchema = new Schema<ProductDoc>(
             versionKey: false,
             transform: (_, ret) => {
                 delete ret._id;
-                return ret
-            }
-        }
-
+                return ret;
+            },
+        },
     }
 );
 
-export const productModel = mongoose.model<ProductDoc>("Product", productSchema);
+productSchema.pre("save", async function (next) {
+    if (this.isNew && typeof this.id === "undefined") {
+        const lastProduct = await mongoose
+            .model<ProductDoc>("Product")
+            .findOne({})
+            .sort({ id: -1 })
+            .select("id")
+            .exec();
+
+        this.id = lastProduct?.id ? lastProduct.id + 1 : 1;
+    }
+    next();
+});
+
+export default mongoose.model<ProductDoc>("Product", productSchema);

@@ -13,4 +13,10 @@ type Mutation {
     currentPassword: String!
     newPassword: String!
   ): PasswordUpdateResponse!
+
+  # Product
+
+  addProduct(productInput: ProductInput!): Product!
+  updateProduct(id: Int!, input: UpdateProductInput): Product!
+  removeProduct(id: Int!): RemoveProductResponse!
 }

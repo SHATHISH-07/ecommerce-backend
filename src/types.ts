@@ -132,6 +132,54 @@ export interface Product {
     thumbnail: string;
 }
 
+// types.ts
+export interface ProductInput {
+    title: string;
+    description: string;
+    category: string;
+    price: number;
+    discountPercentage: number;
+    rating: number;
+    stock: number;
+    tags: string[];
+    brand: string;
+    sku: string;
+    weight: number;
+    dimensions: Dimensions;
+    warrantyInformation: string;
+    shippingInformation: string;
+    availabilityStatus: string;
+    returnPolicy: string;
+    minimumOrderQuantity: number;
+    meta: Meta;
+    images: string[];
+    thumbnail: string;
+}
+export interface UpdateProductInput {
+    title: string;
+    description: string;
+    category: string;
+    price: number;
+    discountPercentage: number;
+    rating: number;
+    stock: number;
+    tags: string[];
+    brand: string;
+    sku: string;
+    weight: number;
+    dimensions: Dimensions;
+    reviews: Review[];
+    warrantyInformation: string;
+    shippingInformation: string;
+    availabilityStatus: string;
+    returnPolicy: string;
+    minimumOrderQuantity: number;
+    meta: Meta;
+    images: string[];
+    thumbnail: string;
+}
+
+
 export interface Dimensions {
     width: number;
     height: number;

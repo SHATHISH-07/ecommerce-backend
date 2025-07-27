@@ -7,6 +7,7 @@ import getCategoryResolver from "./query/getCategoryResolver";
 import userResolver from "./mutation/userResolver";
 import adminResolver from "./mutation/adminResolver";
 import getAdminResolver from "./query/getAdminResolver";
+import productResolver from "./mutation/productResolver";
 
 const resolvers: IResolvers = {
 
@@ -14,7 +15,6 @@ const resolvers: IResolvers = {
         ...getUserResolver.Query,
         ...getProductsResolver.Query,
         ...getCategoryResolver.Query,
-
         ...getAdminResolver.Query
     },
 
@@ -22,7 +22,8 @@ const resolvers: IResolvers = {
         ...signupResolver.Mutation,
         ...loginResolver.Mutation,
         ...userResolver.Mutation,
-        ...adminResolver.Mutation
+        ...adminResolver.Mutation,
+        ...productResolver.Mutation
     },
 };
 
