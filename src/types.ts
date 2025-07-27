@@ -1,29 +1,44 @@
 import { Document, Types } from "mongoose";
 
-
 // User model interface with password
-
 export interface UserModelDoc extends Document {
     name: string;
     username: string;
     email: string;
     address: string;
     phone: string;
+    country: string;
+    state: string;
+    city: string;
+    zipCode: string;
     role?: Role;
     password: string;
     comparePassword(candidatePassword: string): Promise<boolean>;
+    isBanned: boolean;
+    createdAt: Date;
+    isActive: boolean;
+    updatedAt: Date;
+    updatedBy: Types.ObjectId | null;
 }
 
 // User model interface without password
-
 export interface UserModelWithoutPassword {
-    id: string;
+    userId: string;
     name: string;
     username: string;
     email: string;
     address: string;
     phone: string;
+    country: string;
+    state: string;
+    city: string;
+    zipCode: string;
     role: Role;
+    isActive: boolean;
+    isBanned: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+    updatedBy: Types.ObjectId | null;
 }
 
 export enum Role {
@@ -32,47 +47,32 @@ export enum Role {
 }
 
 // Context interface for user session
-
 export interface MyContext {
-    currentUser?: UserModelDoc | null;
-    id?: string;
+    userId?: string;
     name?: string;
     username?: string;
     email?: string;
     phone?: string;
     role?: Role;
+    country?: string;
+    state?: string;
+    city?: string;
+    zipCode?: string;
+    isActive?: boolean;
+    isBanned?: boolean;
+    createdAt?: Date;
     password?: string;
     address?: string;
 }
 
 // Token payload interface
-
 export interface TokenPayload {
     id: string;
     token: string;
 }
 
-// User cart interface
-
-export interface CartItem {
-    externalProductId: number;
-    title: string;
-    thumbnail?: string;
-    priceAtAddTime: number;
-    quantity: number;
-    addedAt?: Date;
-}
-
-export interface UserCart {
-    id: string;
-    userId: Types.ObjectId;
-    products: CartItem[];
-    createdAt: Date;
-    updatedAt: Date;
-}
 
 // User ordered products interface
-
 export interface OrderedProduct {
     externalProductId: number;
     title: string;
@@ -81,7 +81,6 @@ export interface OrderedProduct {
     quantity: number;
     totalPrice: number;
 }
-
 export interface ShippingAddress {
     fullName: string;
     phone: string;
@@ -94,7 +93,6 @@ export interface ShippingAddress {
 export type PaymentMethod = "Cash on Delivery" | "Card" | "UPI" | "NetBanking";
 export type PaymentStatus = "Pending" | "Paid" | "Failed" | "Refunded";
 export type OrderStatus = "Processing" | "Packed" | "Shipped" | "Delivered" | "Cancelled";
-
 export interface UserOrder {
     id: string;
     userId: string;
@@ -109,7 +107,6 @@ export interface UserOrder {
 }
 
 // Product interface
-
 export interface Product {
     id: number;
     title: string;
@@ -140,8 +137,6 @@ export interface Dimensions {
     height: number;
     depth: number;
 }
-
-
 export interface Review {
     rating: number;
     comment: string;
@@ -149,14 +144,12 @@ export interface Review {
     reviewerName: string;
     reviewerEmail: string;
 }
-
 export interface Meta {
     createdAt: Date;
     updatedAt: Date;
     barcode: string;
     qrCode: string;
 }
-
 export interface FetchProductsResponse {
     products: Product[];
     total: number;
@@ -165,7 +158,6 @@ export interface FetchProductsResponse {
 }
 
 // Category interface
-
 export interface Category {
     slug: string;
     name: string;

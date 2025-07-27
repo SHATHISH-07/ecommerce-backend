@@ -1,49 +1,48 @@
 import userModel from "../../../models/userModel";
-import { UserModelWithoutPassword, Role } from "../../../types";
+import { UserModelWithoutPassword, Role, MyContext } from "../../../types";
+import { getCurrentUser } from "../../../utils/getUser";
+import { formatUser } from "../../../utils/userReturn";
 
-const formatUser = (user: any): UserModelWithoutPassword => ({
-    id: user._id.toString(),
-    name: user.name,
-    username: user.username,
-    email: user.email,
-    address: user.address,
-    phone: user.phone,
-    role: user.role
-});
+
 
 const getUserResolver = {
     Query: {
         getCurrentUser: async (
             _: unknown,
             __: unknown,
-            context: { currentUser: UserModelWithoutPassword | null }
+            context: MyContext
         ): Promise<UserModelWithoutPassword> => {
-            const { currentUser } = context;
+
+            console.log("query context", context)
+
+            const currentUser = getCurrentUser(context);
             if (!currentUser) throw new Error("Not authenticated");
-            return currentUser;
+            return formatUser(currentUser);
         },
 
         getUser: async (
             _: unknown,
             args: { username?: string; email?: string; name?: string }
         ): Promise<UserModelWithoutPassword> => {
-            const conditions = [];
-            if (args.username) conditions.push({ username: args.username });
-            if (args.email) conditions.push({ email: args.email });
-            if (args.name) conditions.push({ name: args.name });
+            const searchParams: { [key: string]: string } = {};
 
-            if (conditions.length === 0) {
+            if (args.username) searchParams.username = args.username;
+            if (args.email) searchParams.email = args.email;
+            if (args.name) searchParams.name = args.name;
+
+            if (Object.keys(searchParams).length === 0) {
                 throw new Error("At least one search parameter must be provided.");
             }
 
-            const user = await userModel.findOne({ $or: conditions }).lean();
+            const user = await userModel.findOne(searchParams).lean();
+
             if (!user) throw new Error("User not found");
 
             return formatUser(user);
         },
 
         getUsers: async (): Promise<UserModelWithoutPassword[]> => {
-            const users = await userModel.find().lean();
+            const users = await userModel.find({ role: "user" }).lean();
             return users.map(formatUser);
         },
 
@@ -63,7 +62,16 @@ const getUserResolver = {
         ): Promise<UserModelWithoutPassword[]> => {
             const users = await userModel.find({ role: args.role }).lean();
             return users.map(formatUser);
-        }
+        },
+
+        getUsersByStatus: async (
+            _: unknown,
+            args: { isActive: boolean }
+        ): Promise<UserModelWithoutPassword[]> => {
+            const users = await userModel.find({ isActive: args.isActive }).lean();
+            return users.map(formatUser);
+        },
+
     }
 };
 

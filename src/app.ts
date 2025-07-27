@@ -6,7 +6,8 @@ import context from "./context";
 const server = new ApolloServer({
     resolvers,
     typeDefs,
-    context
+    context: async ({ req }) => await context({ req }),
 });
+
 
 export { server };

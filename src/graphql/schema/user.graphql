@@ -1,0 +1,54 @@
+type User {
+  userId: ID!
+  name: String!
+  username: String!
+  email: String!
+  address: String!
+  phone: String!
+  country: String
+  state: String
+  city: String
+  zipCode: String
+  role: Role!
+  password: String!
+  isActive: Boolean!
+  isBanned: Boolean!
+  createdAt: String
+  updatedAt: String
+  updatedBy: ID
+}
+
+type UserWithoutPassword {
+  userId: ID!
+  name: String!
+  username: String!
+  email: String!
+  address: String!
+  phone: String!
+  country: String
+  state: String
+  city: String
+  zipCode: String
+  role: Role!
+  isActive: Boolean!
+  isBanned: Boolean!
+  createdAt: String
+  updatedAt: String
+  updatedBy: ID
+}
+
+input UpdateUserProfileInput {
+  name: String
+  address: String
+  phone: String
+  email: String
+  country: String
+  state: String
+  city: String
+  zipCode: String
+}
+
+type PasswordUpdateResponse {
+  success: Boolean!
+  message: String!
+}

@@ -1,4 +1,4 @@
-import { fetchCategories, fetchProductsByCategory } from "../../../services/categoryService";
+import { fetchCategories, fetchCategoriesByCategorySlug, fetchProductsByCategory } from "../../../services/categoryService";
 import { Category, FetchProductsResponse } from "../../../types";
 
 const getCategoryResolver = {
@@ -22,6 +22,17 @@ const getCategoryResolver = {
                 throw error;
             }
         },
+
+        searchByCategory: async (_: unknown, args: { categorySlug: string }): Promise<Category[]> => {
+            try {
+                const category = await fetchCategoriesByCategorySlug(args.categorySlug);
+                return category;
+            } catch (error) {
+                console.error(`Error searching category with slug ${args.categorySlug}:`, error);
+                throw error;
+            }
+        }
+
     },
 };
 

@@ -1,0 +1,16 @@
+type Mutation {
+  # Auth
+  signup(input: SignupInput!): User!
+  login(loginIdentifier: String!, password: String!): LoginUser!
+
+  # User
+  updateUserRole(userId: ID!, newRole: Role!): UserWithoutPassword!
+  deactivateUser(userId: ID!): User!
+  activateUser(userId: ID!): User!
+  banUser(userId: ID!): UserWithoutPassword!
+  updateUserProfile(input: UpdateUserProfileInput): UserWithoutPassword!
+  updatePassword(
+    currentPassword: String!
+    newPassword: String!
+  ): PasswordUpdateResponse!
+}

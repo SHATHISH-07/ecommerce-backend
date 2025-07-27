@@ -1,0 +1,5 @@
+type Category {
+  slug: String!
+  name: String!
+  url: String!
+}

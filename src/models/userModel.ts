@@ -28,6 +28,22 @@ const userSchema: Schema<UserModelDoc> = new Schema({
         type: String,
         required: true,
     },
+    country: {
+        type: String,
+        required: true,
+    },
+    state: {
+        type: String,
+        required: true,
+    },
+    city: {
+        type: String,
+        required: true,
+    },
+    zipCode: {
+        type: String,
+        required: true,
+    },
     role: {
         type: String,
         enum: Role,
@@ -36,6 +52,27 @@ const userSchema: Schema<UserModelDoc> = new Schema({
     password: {
         type: String,
         required: true,
+    },
+    isActive: {
+        type: Boolean,
+        default: true,
+    },
+    isBanned: {
+        type: Boolean,
+        default: false,
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now,
+    },
+    updatedAt: {
+        type: Date,
+        default: Date.now,
+    },
+    updatedBy: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        default: null,
     },
 });
 

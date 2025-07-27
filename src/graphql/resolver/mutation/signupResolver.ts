@@ -33,9 +33,6 @@ const signupResolver = {
                 throw new Error("Username already exists");
             }
 
-
-
-
             const newUser = new UserModel(args.input);
             const savedUser = await newUser.save();
 
@@ -46,6 +43,15 @@ const signupResolver = {
                 email: savedUser.email,
                 address: savedUser.address,
                 phone: savedUser.phone,
+                city: savedUser.city,
+                state: savedUser.state,
+                zipCode: savedUser.zipCode,
+                country: savedUser.country,
+                isActive: savedUser.isActive,
+                isBanned: savedUser.isBanned,
+                createdAt: savedUser.createdAt,
+                updatedAt: savedUser.updatedAt,
+                updatedBy: savedUser.updatedBy,
                 role: savedUser.role,
             };
         },

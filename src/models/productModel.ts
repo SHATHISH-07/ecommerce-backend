@@ -62,6 +62,15 @@ const productSchema = new Schema<ProductDoc>(
     },
     {
         timestamps: true,
+        toJSON: {
+            virtuals: true,
+            versionKey: false,
+            transform: (_, ret) => {
+                delete ret._id;
+                return ret
+            }
+        }
+
     }
 );
 

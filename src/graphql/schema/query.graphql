@@ -1,0 +1,24 @@
+type Query {
+  # Users
+  getCurrentUser: UserWithoutPassword!
+  getUser(username: String, email: String, name: String): UserWithoutPassword!
+  getUsers: [UserWithoutPassword!]!
+  getUserById(id: ID!): UserWithoutPassword!
+  getUsersByRole(role: Role!): [UserWithoutPassword!]!
+  getAdminUsers: [UserWithoutPassword!]!
+  getUsersByStatus(isActive: Boolean!): [UserWithoutPassword!]
+  getAdmin(adminId: ID, name: String, email: String, username: String): User!
+  getDeactivatedUsers: [UserWithoutPassword!]!
+  getActiveUsers: [UserWithoutPassword!]!
+  getBannedUsers: [UserWithoutPassword!]!
+
+  # Products
+  getAllProducts(limit: Int, skip: Int): FetchProductsResponse!
+  getProductById(id: Int!): Product!
+  searchProducts(query: String!, limit: Int, skip: Int): FetchProductsResponse!
+
+  # Categories
+  getCategories: [Category!]!
+  getProductsByCategory(categorySlug: String!): FetchProductsResponse!
+  searchByCategory(categorySlug: String!): [Category!]
+}

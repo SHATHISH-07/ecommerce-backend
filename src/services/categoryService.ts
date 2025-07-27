@@ -1,5 +1,3 @@
-// services/productService.ts or similar
-
 import { categoryModel } from "../models/categoryModel";
 import { productModel } from "../models/productModel";
 import { Category, FetchProductsResponse } from "../types";
@@ -33,5 +31,18 @@ export const fetchProductsByCategory = async (
     } catch (error) {
         console.error(" Error fetching products by category from DB:", error);
         throw error;
+    }
+};
+
+export const fetchCategoriesByCategorySlug = async (
+    categorySlug: string
+): Promise<Category[]> => {
+    try {
+        const categories = await categoryModel.find({ slug: categorySlug }).lean();
+
+        return categories;
+    } catch (error) {
+        console.error("Error fetching categories from DB:", error);
+        throw new Error("Failed to fetch categories");
     }
 };
