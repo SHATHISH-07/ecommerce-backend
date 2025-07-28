@@ -205,6 +205,12 @@ export interface FetchProductsResponse {
     limit: number;
 }
 
+export interface BulkProductResponse {
+    success: boolean;
+    message: string;
+    total: number
+}
+
 // Category interface
 export interface Category {
     slug: string;

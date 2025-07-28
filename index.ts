@@ -1,12 +1,10 @@
 import "dotenv/config";
 import mongoose from "mongoose";
-import { server } from "./src/app";
+import { startApolloServer } from "./src/app";
 
 const mongoUri = process.env.MONGO_URI;
 
-if (!mongoUri) {
-    throw new Error("MONGO_URI environment variable is not set");
-}
+if (!mongoUri) throw new Error("MONGO_URI not set");
 
 const connectToDatabase = async () => {
     await mongoose.connect(mongoUri, {
@@ -15,29 +13,22 @@ const connectToDatabase = async () => {
     });
 
     if (mongoose.connection.readyState !== 1) {
-        throw new Error("MongoDB connection not established");
+        throw new Error("MongoDB connection failed");
     }
 
     console.log("Connected to MongoDB");
 
-    mongoose.connection.on("connected", () => {
-        console.log("Mongoose connected to MongoDB");
-    });
-
     mongoose.connection.on("disconnected", async () => {
-        console.warn("Mongoose disconnected. Attempting to reconnect...");
+        console.warn("Disconnected. Reconnecting...");
         try {
-            await mongoose.connect(mongoUri, {
-                serverSelectionTimeoutMS: 5000,
-                maxPoolSize: 10,
-            });
-        } catch (error) {
-            console.error("Reconnection failed:", error);
+            await mongoose.connect(mongoUri);
+        } catch (e) {
+            console.error("Reconnection failed", e);
         }
     });
 
     mongoose.connection.on("error", (error) => {
-        console.error("MongoDB connection error:", error);
+        console.error("MongoDB error:", error);
     });
 };
 
@@ -45,12 +36,14 @@ const startServer = async () => {
     try {
         await connectToDatabase();
 
-        const port = process.env.PORT ? Number(process.env.PORT) : 4000;
-        const { url } = await server.listen({ port });
+        const app = await startApolloServer();
+        const port = process.env.PORT || 4000;
 
-        console.log(`Server is running at ${url}`);
+        app.listen(port, () => {
+            console.log(`Server ready at http://localhost:${port}/graphql`);
+        });
     } catch (error) {
-        console.error("Failed to start the server:", error);
+        console.error("Server startup failed:", error);
         process.exit(1);
     }
 };

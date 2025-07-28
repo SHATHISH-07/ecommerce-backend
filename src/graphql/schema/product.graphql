@@ -142,3 +142,11 @@ type RemoveProductResponse {
   success: Boolean!
   message: String!
 }
+
+scalar Upload
+
+type BulkProductResponse {
+  success: Boolean!
+  message: String!
+  total: Int
+}

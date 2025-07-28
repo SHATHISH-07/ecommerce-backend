@@ -17,6 +17,7 @@ type Mutation {
   # Product
 
   addProduct(productInput: ProductInput!): Product!
+  uploadBulkProductsJSON(file: Upload!): BulkProductResponse!
   updateProduct(id: Int!, input: UpdateProductInput): Product!
   removeProduct(id: Int!): RemoveProductResponse!
 }

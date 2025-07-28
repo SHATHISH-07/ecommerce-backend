@@ -1,7 +1,7 @@
 import { UserModelWithoutPassword } from '../types';
 
 export const formatUser = (user: any): UserModelWithoutPassword => ({
-    userId: user.id,
+    userId: user.userId,
     name: user.name,
     username: user.username,
     email: user.email,

@@ -13,7 +13,7 @@ const getUserResolver = {
             context: MyContext
         ): Promise<UserModelWithoutPassword> => {
 
-            console.log("query context", context)
+            // console.log("query context", context)
 
             const currentUser = getCurrentUser(context);
             if (!currentUser) throw new Error("Not authenticated");

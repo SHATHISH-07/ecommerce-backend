@@ -89,12 +89,13 @@ userSchema.methods.comparePassword = async function (candidatePassword: string):
 };
 
 userSchema.set("toJSON", {
-    transform: (_document, returnedObject) => {
-        returnedObject.id = returnedObject._id.toString();
+    transform: (_document, returnedObject: Record<string, any>) => {
+        returnedObject.id = returnedObject._id?.toString?.();
         delete returnedObject._id;
         delete returnedObject.__v;
         delete returnedObject.password;
     },
 });
+
 
 export default mongoose.model<UserModelDoc>("User", userSchema);
