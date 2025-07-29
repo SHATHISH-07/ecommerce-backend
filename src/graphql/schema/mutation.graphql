@@ -15,9 +15,17 @@ type Mutation {
   ): PasswordUpdateResponse!
 
   # Product
-
   addProduct(productInput: ProductInput!): Product!
   uploadBulkProductsJSON(file: Upload!): BulkProductResponse!
   updateProduct(id: Int!, input: UpdateProductInput): Product!
   removeProduct(id: Int!): RemoveProductResponse!
+
+  # Category
+  addCategory(categoryInput: CategoryInput!): AddCategoryResponse!
+  uploadBulkCategoriesJSON(file: Upload!): BulkCategoryResponse!
+  updateCategory(
+    slug: String!
+    categoryInput: UpdateCategoryInput!
+  ): UpdateCategoryResponse!
+  removeCategory(slug: String!): RemoveCategoryResponse!
 }

@@ -218,3 +218,29 @@ export interface Category {
     url: string;
 }
 
+export interface AddCategoryResponse {
+    success: boolean;
+    message: string;
+    name?: string;
+}
+
+export interface RemoveCategoryResponse {
+    success: boolean;
+    message: string;
+    name?: string;
+}
+
+export interface UpdateCategoryResponse {
+    success: boolean;
+    message: string;
+    name?: string;
+}
+
+export interface BulkCategoryResponse {
+    success: boolean;
+    message: string;
+    total: number;
+}
+
+
+

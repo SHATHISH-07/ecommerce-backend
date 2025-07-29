@@ -3,3 +3,41 @@ type Category {
   name: String!
   url: String!
 }
+
+input CategoryInput {
+  slug: String!
+  name: String!
+  url: String!
+}
+
+input UpdateCategoryInput {
+  slug: String
+  name: String
+  url: String
+}
+
+type AddCategoryResponse {
+  success: Boolean!
+  message: String!
+  name: String
+}
+
+type RemoveCategoryResponse {
+  success: Boolean!
+  message: String!
+  name: String
+}
+
+type BulkCategoryResponse {
+  success: Boolean!
+  message: String!
+  total: Int!
+}
+
+type UpdateCategoryResponse {
+  success: Boolean!
+  message: String!
+  name: String
+}
+
+scalar Upload
