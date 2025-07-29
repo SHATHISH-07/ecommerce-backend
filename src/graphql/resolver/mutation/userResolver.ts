@@ -99,6 +99,31 @@ const userResolver = {
             }
         },
 
+        deleteAccount: async (
+            _: unknown,
+            __: unknown,
+            context: MyContext
+        ): Promise<{ success: boolean, message: string }> => {
+            try {
+                const currentUser = getCurrentUser(context);
+
+                if (!currentUser) {
+                    throw new Error("Authentication required.");
+                }
+
+                const user = await userModel.findByIdAndDelete(currentUser.userId);
+
+                if (!user) {
+                    throw new Error("User not found.");
+                }
+
+                return { success: true, message: "Account deleted successfully." };
+            } catch (error) {
+                console.error("Delete Account Error:", error); // helpful for debugging
+                return { success: false, message: "Something went wrong." };
+            }
+        }
+
     },
 }
 

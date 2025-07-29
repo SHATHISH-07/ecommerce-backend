@@ -52,3 +52,8 @@ type PasswordUpdateResponse {
   success: Boolean!
   message: String!
 }
+
+type DeleteAccountResponse {
+  success: Boolean!
+  message: String!
+}

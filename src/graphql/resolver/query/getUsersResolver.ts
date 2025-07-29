@@ -1,7 +1,7 @@
 import userModel from "../../../models/userModel";
 import { UserModelWithoutPassword, Role, MyContext } from "../../../types";
 import { getCurrentUser } from "../../../utils/getUser";
-import { formatUser } from "../../../utils/userReturn";
+import { formatCurrentUser, formatUser } from "../../../utils/userReturn";
 
 
 
@@ -17,7 +17,7 @@ const getUserResolver = {
 
             const currentUser = getCurrentUser(context);
             if (!currentUser) throw new Error("Not authenticated");
-            return formatUser(currentUser);
+            return formatCurrentUser(currentUser);
         },
 
         getUser: async (
@@ -43,7 +43,7 @@ const getUserResolver = {
 
         getUsers: async (): Promise<UserModelWithoutPassword[]> => {
             const users = await userModel.find({ role: "user" }).lean();
-            return users.map(formatUser);
+            return users.map(user => formatUser(user));
         },
 
         getUserById: async (
