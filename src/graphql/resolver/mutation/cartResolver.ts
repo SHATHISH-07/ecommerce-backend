@@ -1,5 +1,5 @@
 import Cart from "../../../models/cartModel";
-import { MyContext, addCartResponse } from "../../../types";
+import { MyContext, addCartResponse, updateCartResponse } from "../../../types";
 import { getCurrentUser } from "../../../utils/getUser";
 
 const cartResolver = {
@@ -42,7 +42,7 @@ const cartResolver = {
                 let userCart = await Cart.findOne({ userId });
 
                 if (!userCart) {
-                    // Create new cart
+
                     userCart = new Cart({
                         userId,
                         products: [
@@ -63,7 +63,7 @@ const cartResolver = {
                     };
                 }
 
-                // Update existing cart
+
                 const existingProduct = userCart.products.find(
                     (item) => item.productId === productId
                 );
@@ -96,6 +96,57 @@ const cartResolver = {
                 };
             }
         },
+
+        updateUserCart: async (
+            _: unknown,
+            args: { productId: number; quantity: number },
+            context: MyContext
+        ): Promise<updateCartResponse> => {
+            const { productId, quantity } = args;
+            const currentUser = getCurrentUser(context);
+
+            if (!currentUser || !currentUser.userId) {
+                throw new Error("User must be logged in to update cart");
+            }
+
+            try {
+                const userCart = await Cart.findOne({ userId: currentUser.userId });
+
+                if (!userCart) {
+                    throw new Error("Cart not found");
+                }
+
+                if (userCart.products.length === 0) {
+                    throw new Error("Cart is empty");
+                }
+
+                const productIndex = userCart.products.findIndex(
+                    (item) => item.productId === productId
+                );
+
+                if (productIndex === -1) {
+                    throw new Error("Product not found in cart");
+                }
+
+                if (quantity <= 0) {
+                    userCart.products.splice(productIndex, 1);
+                } else {
+                    userCart.products[productIndex].quantity = quantity;
+                }
+
+                await userCart.save();
+
+                return {
+                    success: true,
+                    message: "Cart updated successfully",
+                    cart: userCart,
+                };
+            } catch (error) {
+                console.error(error);
+                throw new Error("Failed to update cart");
+            }
+        }
+
     },
 };
 

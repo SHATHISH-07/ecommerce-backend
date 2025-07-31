@@ -89,6 +89,8 @@ export interface addCartResponse {
     cart: UserCart;
 }
 
+export interface updateCartResponse extends addCartResponse { }
+
 
 // User ordered products interface
 export interface OrderedProduct {

@@ -21,3 +21,9 @@ input AddToCartInput {
   productId: Int!
   quantity: Int
 }
+
+type UpdateCartResponse {
+  message: String!
+  success: Boolean!
+  cart: UserCart!
+}
