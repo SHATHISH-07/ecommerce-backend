@@ -9,6 +9,7 @@ import adminResolver from "./mutation/adminResolver";
 import getAdminResolver from "./query/getAdminResolver";
 import productResolver from "./mutation/productResolver";
 import categoryResolver from "./mutation/categoryResolver";
+import cartResolver from "./mutation/cartResolver";
 
 const resolvers: IResolvers = {
 
@@ -25,7 +26,8 @@ const resolvers: IResolvers = {
         ...userResolver.Mutation,
         ...adminResolver.Mutation,
         ...productResolver.Mutation,
-        ...categoryResolver.Mutation
+        ...categoryResolver.Mutation,
+        ...cartResolver.Mutation
     },
 };
 

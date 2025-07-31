@@ -71,6 +71,24 @@ export interface TokenPayload {
     token: string;
 }
 
+// User Cart type
+
+export interface UserCart {
+    userId: string;
+    products: {
+        productId: number;
+        quantity: number;
+        createdAt: Date;
+        updatedAt: Date | null;
+    }[];
+}
+
+export interface addCartResponse {
+    message: string;
+    success: boolean;
+    cart: UserCart;
+}
+
 
 // User ordered products interface
 export interface OrderedProduct {

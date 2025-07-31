@@ -1,0 +1,23 @@
+# Define individual product in the cart
+type CartProduct {
+  productId: Int!
+  quantity: Int!
+  createdAt: String!
+  updatedAt: String
+}
+
+type UserCart {
+  userId: String!
+  products: [CartProduct!]!
+}
+
+type AddCartResponse {
+  message: String!
+  success: Boolean!
+  cart: UserCart!
+}
+
+input AddToCartInput {
+  productId: Int!
+  quantity: Int
+}
