@@ -91,6 +91,10 @@ export interface addCartResponse {
 
 export interface updateCartResponse extends addCartResponse { }
 
+export interface RemoveCartResponse extends Omit<addCartResponse, 'cart'> { }
+
+export interface ClearCartResponse extends Omit<addCartResponse, 'cart'> { }
+
 
 // User ordered products interface
 export interface OrderedProduct {

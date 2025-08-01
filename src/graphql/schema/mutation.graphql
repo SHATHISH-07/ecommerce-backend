@@ -33,4 +33,6 @@ type Mutation {
   # Cart
   addToCart(input: AddToCartInput!): AddCartResponse!
   updateUserCart(productId: Int!, quantity: Int!): UpdateCartResponse!
+  removeCartItem(productId: Int!): RemoveCartResponse!
+  clearCartItems: ClearCartResponse!
 }

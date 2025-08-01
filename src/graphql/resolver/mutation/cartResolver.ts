@@ -1,5 +1,6 @@
 import Cart from "../../../models/cartModel";
-import { MyContext, addCartResponse, updateCartResponse } from "../../../types";
+import productModel from "../../../models/productModel";
+import { ClearCartResponse, MyContext, RemoveCartResponse, addCartResponse, updateCartResponse } from "../../../types";
 import { getCurrentUser } from "../../../utils/getUser";
 
 const cartResolver = {
@@ -33,6 +34,15 @@ const cartResolver = {
                 if (quantity <= 0) {
                     return {
                         message: "Quantity must be greater than 0",
+                        success: false,
+                        cart: { userId: currentUser.userId, products: [] },
+                    };
+                }
+
+                const existingProductId = await productModel.findOne({ id: productId });
+                if (!existingProductId) {
+                    return {
+                        message: "Invalid product ID or product does not exist",
                         success: false,
                         cart: { userId: currentUser.userId, products: [] },
                     };
@@ -145,6 +155,100 @@ const cartResolver = {
                 console.error(error);
                 throw new Error("Failed to update cart");
             }
+        },
+
+        removeCartItem: async (
+            _: unknown,
+            args: { productId: number },
+            context: MyContext
+        ): Promise<RemoveCartResponse> => {
+
+            const currentUser = getCurrentUser(context);
+
+            if (!currentUser || !currentUser.userId) {
+                throw new Error("User must be logged in to update cart");
+            }
+
+            const { productId } = args;
+
+            try {
+
+                const userCart = await Cart.findOne({ userId: currentUser.userId })
+
+                if (!userCart) {
+                    throw new Error("Cart not found for the user");
+                }
+
+                if (userCart.products.length === 0) {
+                    throw new Error("Cart is empty");
+                }
+
+                const productIndex = userCart.products.findIndex(
+                    (item) => item.productId === productId
+                );
+
+                if (productIndex === -1) {
+                    throw new Error("Product not found in cart");
+                }
+
+                userCart.products.splice(productIndex, 1);
+
+                await userCart.save();
+
+                return {
+                    success: true,
+                    message: "Product removed from cart",
+                };
+
+            } catch (error) {
+
+                console.error(error);
+                throw new Error("Failed to remove cart item");
+
+            }
+
+        },
+
+        clearCartItems: async (
+            _: unknown,
+            __: unknown,
+            context: MyContext
+        ): Promise<ClearCartResponse> => {
+
+            const currentUser = getCurrentUser(context);
+
+            if (!currentUser || !currentUser.userId) {
+                throw new Error("User must be logged in to update cart");
+            }
+
+            try {
+
+                const userCart = await Cart.findOne({ userId: currentUser.userId })
+
+                if (!userCart) {
+                    throw new Error("Cart not found for the user");
+                }
+
+                if (userCart.products.length === 0) {
+                    throw new Error("Cart is empty");
+                }
+
+                userCart.products = [];
+
+                await userCart.save();
+
+                return {
+                    message: "Cart cleared successfully",
+                    success: true
+                }
+
+            } catch (error) {
+
+                console.error(error);
+                throw new Error("Failed to clear cart");
+
+            }
+
         }
 
     },

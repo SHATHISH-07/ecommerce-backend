@@ -27,3 +27,13 @@ type UpdateCartResponse {
   success: Boolean!
   cart: UserCart!
 }
+
+type RemoveCartResponse {
+  message: String!
+  success: Boolean!
+}
+
+type ClearCartResponse {
+  message: String!
+  success: Boolean!
+}
