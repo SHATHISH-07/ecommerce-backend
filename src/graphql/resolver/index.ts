@@ -4,9 +4,10 @@ import loginResolver from "./mutation/loginResolver";
 import getUserResolver from "./query/getUsersResolver";
 import getProductsResolver from "./query/getProductsResolver";
 import getCategoryResolver from "./query/getCategoryResolver";
+import getAdminResolver from "./query/getAdminResolver";
+import getUserCartResolver from "./query/getUserCartResolver";
 import userResolver from "./mutation/userResolver";
 import adminResolver from "./mutation/adminResolver";
-import getAdminResolver from "./query/getAdminResolver";
 import productResolver from "./mutation/productResolver";
 import categoryResolver from "./mutation/categoryResolver";
 import cartResolver from "./mutation/cartResolver";
@@ -17,7 +18,8 @@ const resolvers: IResolvers = {
         ...getUserResolver.Query,
         ...getProductsResolver.Query,
         ...getCategoryResolver.Query,
-        ...getAdminResolver.Query
+        ...getAdminResolver.Query,
+        ...getUserCartResolver.Query
     },
 
     Mutation: {

@@ -83,6 +83,8 @@ export interface UserCart {
     }[];
 }
 
+export interface UserCartResponse extends UserCart { }
+
 export interface addCartResponse {
     message: string;
     success: boolean;

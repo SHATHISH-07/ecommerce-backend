@@ -21,4 +21,7 @@ type Query {
   getCategories: [Category!]!
   getProductsByCategory(categorySlug: String!): FetchProductsResponse!
   searchByCategory(categorySlug: String!): [Category!]
+
+  # Cart
+  getUserCart: UserCart!
 }
