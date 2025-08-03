@@ -4,7 +4,6 @@ import { getCurrentUser } from "../../../utils/getUser";
 import { formatUser } from "../../../utils/userReturn";
 
 
-
 const getAdminResolver = {
     Query: {
         getAdminUsers: async (

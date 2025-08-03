@@ -12,6 +12,7 @@ export interface UserModelDoc extends Document {
     city: string;
     zipCode: string;
     role?: Role;
+    emailVerified: boolean
     password: string;
     comparePassword(candidatePassword: string): Promise<boolean>;
     isBanned: boolean;
@@ -20,6 +21,8 @@ export interface UserModelDoc extends Document {
     updatedAt: Date;
     updatedBy: Types.ObjectId | null;
 }
+
+export interface PendingUserModelDoc extends Omit<UserModelDoc, 'isActive' | 'isBanned' | 'updatedBy'> { }
 
 // User model interface without password
 export interface UserModelWithoutPassword {
@@ -33,6 +36,7 @@ export interface UserModelWithoutPassword {
     state: string;
     city: string;
     zipCode: string;
+    emailVerified: boolean;
     role: Role;
     isActive: boolean;
     isBanned: boolean;
@@ -56,6 +60,7 @@ export interface MyContext {
     role?: Role;
     country?: string;
     state?: string;
+    emailVerified?: boolean
     city?: string;
     zipCode?: string;
     isActive?: boolean;
@@ -65,11 +70,28 @@ export interface MyContext {
     address?: string;
 }
 
+
 // Token payload interface
 export interface TokenPayload {
     id: string;
     token: string;
 }
+
+// OTP interface
+
+export interface OTPDoc extends Document {
+    email: string;
+    otp: string;
+    createdAt: Date;
+    compareOTP(candidateOTP: string): Promise<boolean>;
+}
+
+export interface OTPSignupResponse {
+    message: string;
+    success: boolean;
+}
+
+export interface ResendOTPResponse extends OTPSignupResponse { }
 
 // User Cart type
 

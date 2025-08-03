@@ -18,3 +18,13 @@ input SignupInput {
   zipCode: String!
   password: String!
 }
+
+type SignupResponse {
+  message: String!
+  success: Boolean!
+}
+
+type ResendEmailOtpResponse {
+  message: String!
+  success: Boolean!
+}

@@ -19,7 +19,11 @@ const context = async ({ req }: ContextType): Promise<MyContext> => {
 
     if (authorization && authorization.toLowerCase().startsWith("bearer ")) {
         const token = authorization.substring(7);
+
+        // console.log(token)
+
         if (!token) {
+
             // console.log("Token is missing after 'Bearer '");
             return {};
         }
@@ -51,6 +55,7 @@ const context = async ({ req }: ContextType): Promise<MyContext> => {
                 phone: currentUser.phone,
                 role: currentUser.role,
                 country: currentUser.country,
+                emailVerified: currentUser.emailVerified,
                 state: currentUser.state,
                 city: currentUser.city,
                 zipCode: currentUser.zipCode,

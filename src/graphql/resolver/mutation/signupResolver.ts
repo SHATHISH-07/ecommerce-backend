@@ -1,5 +1,8 @@
+import OTPModel from "../../../models/OTPModel";
+import pendingUserModel from "../../../models/pendingUserModel";
 import UserModel from "../../../models/userModel";
-import { UserModelDoc } from "../../../types"
+import otpGenerator from "../../../utils/otpGenerator";
+import { sendOtpEmail } from "../../../utils/sendEmail";
 
 const signupResolver = {
     Mutation: {
@@ -12,11 +15,16 @@ const signupResolver = {
                     email: string;
                     address: string;
                     phone: string;
-                    role?: string;
+                    country: string;
+                    state: string;
+                    role: string;
+                    city: string;
+                    zipCode: string;
+                    emailVerified: boolean;
                     password: string;
                 }
             }
-        ): Promise<Partial<UserModelDoc>> => {
+        ): Promise<{ message: string; success: boolean }> => {
 
             const {
                 name,
@@ -24,36 +32,49 @@ const signupResolver = {
                 email,
                 address,
                 phone,
-                role = "user",
                 password,
+                country,
+                state,
+                role,
+                city,
+                zipCode,
+                emailVerified,
             } = args.input;
 
+            if (email === "" || password === "") {
+                throw new Error("Email and password are required");
+            }
+
+            if (email === "nexkart.nexkart@gmail.com") {
+                throw new Error("Enter a valid email address");
+            }
+
             const existingUser = await UserModel.findOne({ username });
-            if (existingUser) {
+
+            const pendingUser = await pendingUserModel.findOne({ $or: [{ email }, { username }] });
+
+            if (existingUser || pendingUser) {
                 throw new Error("Username already exists");
             }
 
-            const newUser = new UserModel(args.input);
-            const savedUser = await newUser.save();
+            const newPendingUser = new pendingUserModel(args.input);
+            await newPendingUser.save();
+
+            const otp = otpGenerator();
+
+            const newOtp = new OTPModel({
+                email,
+                otp,
+            });
+
+            await newOtp.save();
+
+            await sendOtpEmail(email, otp);
 
             return {
-                id: savedUser._id,
-                name: savedUser.name,
-                username: savedUser.username,
-                email: savedUser.email,
-                address: savedUser.address,
-                phone: savedUser.phone,
-                city: savedUser.city,
-                state: savedUser.state,
-                zipCode: savedUser.zipCode,
-                country: savedUser.country,
-                isActive: savedUser.isActive,
-                isBanned: savedUser.isBanned,
-                createdAt: savedUser.createdAt,
-                updatedAt: savedUser.updatedAt,
-                updatedBy: savedUser.updatedBy,
-                role: savedUser.role,
-            };
+                message: "OTP sent successfully",
+                success: true
+            }
         },
     },
 };

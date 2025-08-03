@@ -11,6 +11,7 @@ import adminResolver from "./mutation/adminResolver";
 import productResolver from "./mutation/productResolver";
 import categoryResolver from "./mutation/categoryResolver";
 import cartResolver from "./mutation/cartResolver";
+import otpResolver from "./mutation/otpResolver";
 
 const resolvers: IResolvers = {
 
@@ -29,7 +30,8 @@ const resolvers: IResolvers = {
         ...adminResolver.Mutation,
         ...productResolver.Mutation,
         ...categoryResolver.Mutation,
-        ...cartResolver.Mutation
+        ...cartResolver.Mutation,
+        ...otpResolver.Mutation
     },
 };
 

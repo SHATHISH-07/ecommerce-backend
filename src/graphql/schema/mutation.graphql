@@ -1,7 +1,9 @@
 type Mutation {
   # Auth
-  signup(input: SignupInput!): User!
+  signup(input: SignupInput!): SignupResponse!
   login(loginIdentifier: String!, password: String!): LoginUser!
+  verifyEmailOtp(email: String!, otp: String!): UserWithoutPassword!
+  resendEmailOTP(email: String!): ResendEmailOtpResponse!
 
   # User
   updateUserRole(userId: ID!, newRole: Role!): UserWithoutPassword!

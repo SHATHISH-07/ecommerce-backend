@@ -57,6 +57,10 @@ const userSchema: Schema<UserModelDoc> = new Schema({
         type: Boolean,
         default: true,
     },
+    emailVerified: {
+        type: Boolean,
+        default: false,
+    },
     isBanned: {
         type: Boolean,
         default: false,
