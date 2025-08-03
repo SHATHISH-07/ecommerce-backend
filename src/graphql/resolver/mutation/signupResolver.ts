@@ -49,7 +49,9 @@ const signupResolver = {
                 throw new Error("Enter a valid email address");
             }
 
-            const existingUser = await UserModel.findOne({ username });
+            const existingUser = await UserModel.findOne({
+                $or: [{ username }, { email }]
+            });
 
             const pendingUser = await pendingUserModel.findOne({ $or: [{ email }, { username }] });
 
