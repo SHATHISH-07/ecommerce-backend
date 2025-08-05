@@ -13,6 +13,7 @@ export interface UserModelDoc extends Document {
     zipCode: string;
     role?: Role;
     emailVerified: boolean
+    userOrderHistory: UserOrderHistory[];
     password: string;
     comparePassword(candidatePassword: string): Promise<boolean>;
     isBanned: boolean;
@@ -38,6 +39,7 @@ export interface UserModelWithoutPassword {
     zipCode: string;
     emailVerified: boolean;
     role: Role;
+    userOrderHistory: UserOrderHistory[];
     isActive: boolean;
     isBanned: boolean;
     createdAt: Date;
@@ -48,6 +50,11 @@ export interface UserModelWithoutPassword {
 export enum Role {
     User = "user",
     Admin = "admin"
+}
+
+export interface UserOrderHistory {
+    orderId: string;
+    placedAt: Date;
 }
 
 // Context interface for user session
@@ -130,19 +137,22 @@ export interface OrderedProduct {
     totalPrice: number;
 }
 export interface ShippingAddress {
-    fullName: string;
+    name: string;
+    email: string;
     phone: string;
-    addressLine: string;
+    phoneVerified: boolean;
+    address: string;
     city: string;
-    postalCode: string;
+    state: string;
+    zipCode: string;
     country: string;
 }
 
 export type PaymentMethod = "Cash on Delivery" | "Card" | "UPI" | "NetBanking";
 export type PaymentStatus = "Pending" | "Paid" | "Failed" | "Refunded";
-export type OrderStatus = "Processing" | "Packed" | "Shipped" | "Delivered" | "Cancelled";
+export type OrderStatus = "Processing" | "Packed" | "Shipped" | "Out for Delivery" | "Delivered" | "Cancelled" | "Returned" | "Refunded";
+
 export interface UserOrder {
-    id: string;
     userId: string;
     products: OrderedProduct[];
     shippingAddress: ShippingAddress;

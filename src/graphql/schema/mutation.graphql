@@ -15,6 +15,16 @@ type Mutation {
     currentPassword: String!
     newPassword: String!
   ): PasswordUpdateResponse!
+  verifyResetPasswordOtp(
+    email: String!
+    otp: String!
+  ): VerifyResetPasswordOtpResponse!
+  initiateResetPassword(email: String!): InitiateResetPasswordResponse!
+  resetPassword(
+    email: String!
+    newPassword: String!
+    reenterPassword: String!
+  ): ResetPasswordResponse!
   deleteAccount: DeleteAccountResponse!
 
   # Product

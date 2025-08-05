@@ -3,6 +3,14 @@ import { Schema } from "mongoose";
 import bcrypt from "bcrypt";
 import { UserModelDoc, Role } from "../types";
 
+const UserOrderHistorySchema = new Schema(
+    {
+        orderId: { type: String, required: true },
+        placedAt: { type: Date, required: true },
+    },
+    { _id: false }
+);
+
 const userSchema: Schema<UserModelDoc> = new Schema({
     name: {
         type: String,
@@ -64,6 +72,12 @@ const userSchema: Schema<UserModelDoc> = new Schema({
     isBanned: {
         type: Boolean,
         default: false,
+    },
+    userOrderHistory: {
+        type: [
+            UserOrderHistorySchema
+        ],
+        default: [],
     },
     createdAt: {
         type: Date,

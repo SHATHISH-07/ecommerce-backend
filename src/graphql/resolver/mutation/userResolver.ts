@@ -3,6 +3,9 @@ import { MyContext, UserModelWithoutPassword } from "../../../types";
 import bcrypt from "bcrypt";
 import { getCurrentUser } from "../../../utils/getUser";
 import { formatUser } from "../../../utils/userReturn";
+import OTPModel from "../../../models/OTPModel";
+import { sendOtpEmail } from "../../../utils/sendEmail";
+import otpGenerator from "../../../utils/otpGenerator";
 
 const userResolver = {
     Mutation: {
@@ -97,6 +100,75 @@ const userResolver = {
                 console.error("Error in updatePassword:", err);
                 return { success: false, message: "Something went wrong." };
             }
+        },
+
+        initiateResetPassword: async (
+            _: unknown,
+            args: { email: string },
+            context: MyContext
+        ): Promise<{ success: boolean; message: string }> => {
+
+            const { email } = args;
+
+            if (!email) {
+                throw new Error("User not authenticated.");
+            }
+
+            const otp = otpGenerator();
+
+            const message = "Reset Password Verification OTP";
+
+            await OTPModel.deleteMany({ email });
+
+            await OTPModel.create({ email, otp });
+
+            await sendOtpEmail(email, otp, message);
+
+            return {
+                success: true,
+                message: "OTP sent to your registered email.",
+            };
+        },
+
+        resetPassword: async (
+            _: unknown,
+            args: { email: string; newPassword: string; reenterPassword: string },
+            ___: unknown
+        ): Promise<{ success: boolean; message: string }> => {
+
+            const { email, newPassword, reenterPassword } = args;
+
+            // Ensure no OTP record exists → OTP must be verified
+            const otpStillThere = await OTPModel.findOne({ email });
+            if (otpStillThere) {
+                return {
+                    success: false,
+                    message: "OTP verification required before resetting password.",
+                };
+            }
+
+            if (newPassword !== reenterPassword) {
+                return {
+                    success: false,
+                    message: "Passwords do not match.",
+                };
+            }
+
+            const user = await userModel.findOne({ email });
+            if (!user) {
+                return {
+                    success: false,
+                    message: "User not found.",
+                };
+            }
+
+            user.password = newPassword;
+            await user.save();
+
+            return {
+                success: true,
+                message: "Password has been reset successfully.",
+            };
         },
 
         deleteAccount: async (

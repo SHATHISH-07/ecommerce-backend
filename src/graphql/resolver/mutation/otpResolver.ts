@@ -1,7 +1,7 @@
 import OTPModel from "../../../models/OTPModel";
 import PendingUserModel from "../../../models/pendingUserModel";
 import UserModel from "../../../models/userModel";
-import { ResendOTPResponse, UserModelWithoutPassword } from "../../../types";
+import { MyContext, ResendOTPResponse, UserModelWithoutPassword } from "../../../types";
 import otpGenerator from "../../../utils/otpGenerator";
 import { sendOtpEmail, sendSignupSuccessEmail } from "../../../utils/sendEmail";
 
@@ -77,6 +77,7 @@ const otpResolver = {
                 city: savedUser.city,
                 state: savedUser.state,
                 zipCode: savedUser.zipCode,
+                userOrderHistory: savedUser.userOrderHistory,
                 country: savedUser.country,
                 isActive: savedUser.isActive,
                 isBanned: savedUser.isBanned,
@@ -86,6 +87,39 @@ const otpResolver = {
                 role: savedUser.role,
             };
         },
+
+        verifyResetPasswordOtp: async (
+            _: unknown,
+            args: { email: string; otp: string },
+            context: MyContext
+        ): Promise<{ success: boolean; message: string }> => {
+            const { email, otp } = args
+
+            const otpDoc = await OTPModel.findOne({ email });
+            if (!otpDoc) {
+                return {
+                    success: false,
+                    message: "OTP has expired or not requested.",
+                };
+            }
+
+            const isMatch = await otpDoc.compareOTP(otp);
+            if (!isMatch) {
+                return {
+                    success: false,
+                    message: "Invalid OTP.",
+                };
+            }
+
+            await OTPModel.deleteOne({ email });
+
+            return {
+                success: true,
+                message: "OTP verified. You can now reset your password.",
+            };
+        },
+
+
 
         resendEmailOTP: async (
             _: unknown,
@@ -109,6 +143,8 @@ const otpResolver = {
 
             const otp = otpGenerator();
 
+            const message = "Resented OTP to your registered email";
+
             let otpDoc = await OTPModel.findOne({ email });
             if (!otpDoc) {
                 otpDoc = new OTPModel({ email, otp });
@@ -117,7 +153,7 @@ const otpResolver = {
             }
 
             await otpDoc.save();
-            await sendOtpEmail(email, otp);
+            await sendOtpEmail(email, otp, message);
 
             return {
                 success: true,

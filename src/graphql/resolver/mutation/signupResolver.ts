@@ -56,13 +56,15 @@ const signupResolver = {
             const pendingUser = await pendingUserModel.findOne({ $or: [{ email }, { username }] });
 
             if (existingUser || pendingUser) {
-                throw new Error("Username already exists");
+                throw new Error("Email or Username already exists");
             }
 
             const newPendingUser = new pendingUserModel(args.input);
             await newPendingUser.save();
 
             const otp = otpGenerator();
+
+            const message = "Signup Verification OTP";
 
             const newOtp = new OTPModel({
                 email,
@@ -71,7 +73,7 @@ const signupResolver = {
 
             await newOtp.save();
 
-            await sendOtpEmail(email, otp);
+            await sendOtpEmail(email, otp, message);
 
             return {
                 message: "OTP sent successfully",

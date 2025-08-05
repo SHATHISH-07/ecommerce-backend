@@ -1,12 +1,12 @@
 import { sendMail } from "../services/emailService";
 
-export const sendOtpEmail = async (email: string, otp: string) => {
-  const subject = "Your OTP Code";
+export const sendOtpEmail = async (email: string, otp: string, message: string) => {
+  const subject = `${message}`;
   const html = `
     <div style="font-family: Arial, sans-serif;">
-      <h2>Email Verification</h2>
+      <h2>${message}</h2>
       <p>Your OTP code is:</p>
-      <h3 style="color: #0e76a8;">${otp}</h3>
+      <h3 style="color: #0e76a8; font-weight: semibold">${otp}</h3>
       <p>This OTP will expire in 2 minutes.</p>
       <h2>Thank you for using our service! NexKart</h2>
     </div>
