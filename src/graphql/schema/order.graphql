@@ -48,12 +48,7 @@ type PlaceOrderResponse {
   success: Boolean!
 }
 
-type VerifyPhoneOtpResponse {
-  message: String!
-  success: Boolean!
-}
-
-type ResendPhoneOtpResponse {
+type VerifyOtpResponse {
   message: String!
   success: Boolean!
 }

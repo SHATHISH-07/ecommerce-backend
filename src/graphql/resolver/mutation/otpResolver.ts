@@ -250,53 +250,6 @@ const otpResolver = {
                 message: "OTP verified. Order placed successfully.",
             };
         },
-
-        resendOrderOtp: async (
-            _: unknown,
-            args: { email: string },
-            context: MyContext
-        ): Promise<ResendOTPResponse> => {
-
-            const currentUser = getCurrentUser(context);
-
-            if (!currentUser) {
-                throw new Error("Not authenticated, user must be logged in.");
-            }
-
-            const { email } = args;
-
-            const pendingOrder = await PendingOrderModel.findOne({ "shippingAddress.email": email });
-            if (!pendingOrder) {
-                throw new Error("Pending order not found for the given email");
-            }
-
-            const existingOtp = await OTPModel.findOne({ verificationIdentifier: email });
-            if (
-                existingOtp &&
-                existingOtp.createdAt &&
-                Date.now() - existingOtp.createdAt.getTime() < 60000
-            ) {
-                throw new Error("Please wait at least 1 minute before requesting a new OTP");
-            }
-
-            // const formattedPhone = phone.startsWith("+91") ? phone : `+91${phone}`;
-
-
-            const otp = otpGenerator();
-            await sendOtpEmail(email, otp, "Resented OTP to your registered email to verify your order");
-
-            // if (!smsSent) {
-            //     throw new Error("Failed to send OTP via SMS");
-            // }
-
-            const newOtp = new OTPModel({ verificationIdentifier: email, otp });
-            await newOtp.save();
-
-            return {
-                success: true,
-                message: "OTP resent successfully to your phone.",
-            };
-        },
     },
 };
 

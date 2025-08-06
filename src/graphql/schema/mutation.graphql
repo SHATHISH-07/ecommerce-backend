@@ -4,8 +4,7 @@ type Mutation {
   login(loginIdentifier: String!, password: String!): LoginUser!
   verifyEmailOtp(email: String!, otp: String!): UserWithoutPassword!
   resendEmailOTP(email: String!): ResendEmailOtpResponse!
-  verifyOrderOtp(email: String!, otp: String!): VerifyPhoneOtpResponse!
-  resendOrderOtp(email: String!): ResendPhoneOtpResponse!
+  verifyOrderOtp(email: String!, otp: String!): VerifyOtpResponse!
 
   # User
   updateUserRole(userId: ID!, newRole: Role!): UserWithoutPassword!
