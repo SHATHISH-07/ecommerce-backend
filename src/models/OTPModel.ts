@@ -5,7 +5,7 @@ import { OTPDoc } from "../types";
 
 
 const otpSchema = new Schema<OTPDoc>({
-    email: {
+    verificationIdentifier: {
         type: String,
         required: true,
     },

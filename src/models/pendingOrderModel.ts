@@ -1,7 +1,7 @@
 import { Schema, Document, model } from "mongoose";
-import { OrderedProduct, ShippingAddress, UserOrder } from "../types";
+import { OrderedProduct, ShippingAddress, userPendingOrder } from "../types";
 
-type UserOrderDocument = UserOrder & Document;
+type UserPendingOrderDocument = userPendingOrder & Document;
 
 const OrderedProductSchema = new Schema<OrderedProduct>({
     externalProductId: { type: Number, required: true },
@@ -24,7 +24,7 @@ const ShippingAddressSchema = new Schema<ShippingAddress>({
     country: { type: String, required: true },
 });
 
-const UserOrderSchema = new Schema<UserOrderDocument>(
+const UserPendingOrderSchema = new Schema<UserPendingOrderDocument>(
     {
         userId: { type: String, required: true },
         products: { type: [OrderedProductSchema], required: true },
@@ -41,18 +41,34 @@ const UserOrderSchema = new Schema<UserOrderDocument>(
         },
         orderStatus: {
             type: String,
-            enum: ["Processing", "Packed", "Shipped", "Out for Delivery", "Delivered", "Cancelled", "Returned", "Refunded"],
+            enum: [
+                "Processing", "Packed", "Shipped",
+                "Out for Delivery", "Delivered",
+                "Cancelled", "Returned", "Refunded"
+            ],
             default: "Processing",
         },
         totalAmount: { type: Number, required: true },
-        placedAt: { type: Date, default: Date.now },
-        refundAt: { type: Date, default: null },
     },
     {
         timestamps: true,
     }
 );
 
-const OrderModel = model<UserOrderDocument>("Order", UserOrderSchema);
+UserPendingOrderSchema.pre("save", function (next) {
+    const doc = this as UserPendingOrderDocument;
 
-export default OrderModel;
+    if (doc.paymentMethod === "Cash_on_Delivery" as userPendingOrder["paymentMethod"]) {
+        doc.paymentStatus = "Pending";
+    } else {
+        doc.paymentStatus = "Paid";
+    }
+
+    next();
+});
+
+
+
+const PendingOrderModel = model<UserPendingOrderDocument>("PendingOrder", UserPendingOrderSchema);
+
+export default PendingOrderModel;

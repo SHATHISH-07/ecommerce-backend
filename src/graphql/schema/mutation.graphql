@@ -4,6 +4,8 @@ type Mutation {
   login(loginIdentifier: String!, password: String!): LoginUser!
   verifyEmailOtp(email: String!, otp: String!): UserWithoutPassword!
   resendEmailOTP(email: String!): ResendEmailOtpResponse!
+  verifyOrderOtp(email: String!, otp: String!): VerifyPhoneOtpResponse!
+  resendOrderOtp(email: String!): ResendPhoneOtpResponse!
 
   # User
   updateUserRole(userId: ID!, newRole: Role!): UserWithoutPassword!
@@ -47,4 +49,7 @@ type Mutation {
   updateUserCart(productId: Int!, quantity: Int!): UpdateCartResponse!
   removeCartItem(productId: Int!): RemoveCartResponse!
   clearCartItems: ClearCartResponse!
+
+  # Order
+  placeOrder(input: PlaceOrderInput!): PlaceOrderResponse!
 }

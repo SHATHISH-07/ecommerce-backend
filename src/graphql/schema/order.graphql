@@ -1,0 +1,59 @@
+input PlaceOrderInput {
+  products: [OrderedProductInput!]!
+  shippingAddress: ShippingAddressInput!
+  paymentMethod: PaymentMethod!
+  totalAmount: Float!
+}
+
+input OrderedProductInput {
+  externalProductId: Int!
+  title: String!
+  thumbnail: String
+  priceAtPurchase: Float!
+  quantity: Int!
+  totalPrice: Float!
+}
+
+input ShippingAddressInput {
+  name: String!
+  email: String!
+  phone: String!
+  address: String!
+  city: String!
+  state: String!
+  zipCode: String!
+  country: String!
+}
+
+enum PaymentMethod {
+  Cash_on_Delivery
+  Card
+  UPI
+  NetBanking
+}
+
+enum OrderStatus {
+  Processing
+  Packed
+  Shipped
+  Out_for_Delivery
+  Delivered
+  Cancelled
+  Returned
+  Refunded
+}
+
+type PlaceOrderResponse {
+  message: String!
+  success: Boolean!
+}
+
+type VerifyPhoneOtpResponse {
+  message: String!
+  success: Boolean!
+}
+
+type ResendPhoneOtpResponse {
+  message: String!
+  success: Boolean!
+}

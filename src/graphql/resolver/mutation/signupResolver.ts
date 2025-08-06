@@ -64,10 +64,12 @@ const signupResolver = {
 
             const otp = otpGenerator();
 
+            const verificationIdentifier = email
+
             const message = "Signup Verification OTP";
 
             const newOtp = new OTPModel({
-                email,
+                verificationIdentifier,
                 otp,
             });
 

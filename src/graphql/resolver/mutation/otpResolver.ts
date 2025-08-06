@@ -1,9 +1,12 @@
 import OTPModel from "../../../models/OTPModel";
+import PendingOrderModel from "../../../models/pendingOrderModel";
 import PendingUserModel from "../../../models/pendingUserModel";
+import OrderModel from "../../../models/placeOrderModel";
 import UserModel from "../../../models/userModel";
 import { MyContext, ResendOTPResponse, UserModelWithoutPassword } from "../../../types";
+import { getCurrentUser } from "../../../utils/getUser";
 import otpGenerator from "../../../utils/otpGenerator";
-import { sendOtpEmail, sendSignupSuccessEmail } from "../../../utils/sendEmail";
+import { sendOrderSuccessEmail, sendOtpEmail, sendSignupSuccessEmail } from "../../../utils/sendEmail";
 
 const otpResolver = {
     Mutation: {
@@ -13,13 +16,13 @@ const otpResolver = {
         ): Promise<Partial<UserModelWithoutPassword>> => {
             const { email, otp } = args;
 
-            const savedOtp = await OTPModel.findOne({ email: email });
+            const savedOtp = await OTPModel.findOne({ verificationIdentifier: email });
             if (!savedOtp) throw new Error("OTP expired or not found");
 
             const now = new Date();
             const diffMs = now.getTime() - savedOtp.createdAt.getTime();
             if (diffMs > 2 * 60 * 1000) {
-                await OTPModel.deleteOne({ email });
+                await OTPModel.deleteOne({ verificationIdentifier: email });
                 throw new Error("OTP has expired. Please request a new one.");
             }
 
@@ -91,11 +94,11 @@ const otpResolver = {
         verifyResetPasswordOtp: async (
             _: unknown,
             args: { email: string; otp: string },
-            context: MyContext
         ): Promise<{ success: boolean; message: string }> => {
+
             const { email, otp } = args
 
-            const otpDoc = await OTPModel.findOne({ email });
+            const otpDoc = await OTPModel.findOne({ verificationIdentifier: email });
             if (!otpDoc) {
                 return {
                     success: false,
@@ -111,15 +114,13 @@ const otpResolver = {
                 };
             }
 
-            await OTPModel.deleteOne({ email });
+            await OTPModel.deleteOne({ verificationIdentifier: email });
 
             return {
                 success: true,
                 message: "OTP verified. You can now reset your password.",
             };
         },
-
-
 
         resendEmailOTP: async (
             _: unknown,
@@ -132,7 +133,7 @@ const otpResolver = {
                 throw new Error("Pending user not found for the given email");
             }
 
-            const existingOtp = await OTPModel.findOne({ email });
+            const existingOtp = await OTPModel.findOne({ verificationIdentifier: email });
             if (
                 existingOtp &&
                 existingOtp.createdAt &&
@@ -145,7 +146,7 @@ const otpResolver = {
 
             const message = "Resented OTP to your registered email";
 
-            let otpDoc = await OTPModel.findOne({ email });
+            let otpDoc = await OTPModel.findOne({ verificationIdentifier: email });
             if (!otpDoc) {
                 otpDoc = new OTPModel({ email, otp });
             } else {
@@ -159,8 +160,143 @@ const otpResolver = {
                 success: true,
                 message: "OTP resent successfully",
             };
-        }
+        },
 
+
+        verifyOrderOtp: async (
+            _: unknown,
+            args: { email: string; otp: string },
+            context: MyContext
+        ): Promise<{ success: boolean; message: string }> => {
+
+            const currentUser = getCurrentUser(context);
+
+            if (!currentUser) {
+                throw new Error("Not authenticated, user must be logged in.");
+            }
+
+            const { email, otp } = args;
+
+            const otpDoc = await OTPModel.findOne({ verificationIdentifier: email });
+            if (!otpDoc) {
+                return {
+                    success: false,
+                    message: "OTP has expired or not requested.",
+                };
+            }
+
+            const now = new Date();
+            const diffMs = now.getTime() - otpDoc.createdAt.getTime();
+            if (diffMs > 2 * 60 * 1000) {
+                await OTPModel.deleteOne({ verificationIdentifier: email });
+                return {
+                    success: false,
+                    message: "OTP has expired. Please request a new one.",
+                };
+            }
+
+            const isMatch = await otpDoc.compareOTP(otp);
+            if (!isMatch) {
+                return {
+                    success: false,
+                    message: "Invalid OTP.",
+                };
+            }
+
+            const pendingOrder = await PendingOrderModel.findOne({ "shippingAddress.email": email });
+            if (!pendingOrder) {
+                return {
+                    success: false,
+                    message: "Pending order not found.",
+                };
+            }
+
+            pendingOrder.shippingAddress.isVerified = true;
+
+            const finalOrder = new OrderModel({
+                userId: pendingOrder.userId,
+                products: pendingOrder.products,
+                shippingAddress: pendingOrder.shippingAddress,
+                paymentMethod: pendingOrder.paymentMethod,
+                paymentStatus: pendingOrder.paymentStatus,
+                orderStatus: pendingOrder.orderStatus,
+                totalAmount: pendingOrder.totalAmount,
+                placedAt: new Date(),
+            });
+            await finalOrder.save();
+
+
+            const userOrder = await OrderModel.findOne({ userId: currentUser.userId });
+
+            if (!userOrder) {
+                throw new Error("User order not found.");
+            }
+
+            await sendOrderSuccessEmail(
+                userOrder.shippingAddress.name,
+                userOrder.shippingAddress.phone,
+                userOrder.shippingAddress.email,
+                userOrder.id,
+                "Your Order has been Placed Successfully"
+            );
+
+            await Promise.all([
+                OTPModel.deleteOne({ verificationIdentifier: email }),
+                PendingOrderModel.deleteOne({ _id: pendingOrder._id }),
+            ]);
+
+            return {
+                success: true,
+                message: "OTP verified. Order placed successfully.",
+            };
+        },
+
+        resendOrderOtp: async (
+            _: unknown,
+            args: { email: string },
+            context: MyContext
+        ): Promise<ResendOTPResponse> => {
+
+            const currentUser = getCurrentUser(context);
+
+            if (!currentUser) {
+                throw new Error("Not authenticated, user must be logged in.");
+            }
+
+            const { email } = args;
+
+            const pendingOrder = await PendingOrderModel.findOne({ "shippingAddress.email": email });
+            if (!pendingOrder) {
+                throw new Error("Pending order not found for the given email");
+            }
+
+            const existingOtp = await OTPModel.findOne({ verificationIdentifier: email });
+            if (
+                existingOtp &&
+                existingOtp.createdAt &&
+                Date.now() - existingOtp.createdAt.getTime() < 60000
+            ) {
+                throw new Error("Please wait at least 1 minute before requesting a new OTP");
+            }
+
+            // const formattedPhone = phone.startsWith("+91") ? phone : `+91${phone}`;
+
+
+            const otp = otpGenerator();
+            await sendOtpEmail(email, otp, "Resented OTP to your registered email to verify your order");
+
+            // if (!smsSent) {
+            //     throw new Error("Failed to send OTP via SMS");
+            // }
+
+            const newOtp = new OTPModel({ verificationIdentifier: email, otp });
+            await newOtp.save();
+
+            return {
+                success: true,
+                message: "OTP resent successfully to your phone.",
+            };
+        },
     },
 };
 

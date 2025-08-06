@@ -87,7 +87,7 @@ export interface TokenPayload {
 // OTP interface
 
 export interface OTPDoc extends Document {
-    email: string;
+    verificationIdentifier: string;
     otp: string;
     createdAt: Date;
     compareOTP(candidateOTP: string): Promise<boolean>;
@@ -140,7 +140,7 @@ export interface ShippingAddress {
     name: string;
     email: string;
     phone: string;
-    phoneVerified: boolean;
+    isVerified: boolean;
     address: string;
     city: string;
     state: string;
@@ -163,6 +163,10 @@ export interface UserOrder {
     placedAt: Date;
     refundAt?: Date | null;
 }
+
+export interface userPendingOrder extends Omit<UserOrder, "placedAt" | "refundAt"> { }
+
+export interface userOrderInput extends Omit<userPendingOrder, "userId"> { }
 
 // Product interface
 export interface Product {
