@@ -1,6 +1,6 @@
 import OrderModel from "../../../models/placeOrderModel";
 import userModel from "../../../models/userModel";
-import { Role, MyContext, UserModelWithoutPassword, OrderStatus } from "../../../types";
+import { Role, MyContext, UserModelWithoutPassword, OrderStatus, PaymentMethod } from "../../../types";
 import { getCurrentUser } from "../../../utils/getUser";
 import extractReturnDays from "../../../utils/returnDays";
 import { sendEmailNoReturnPolicy, sendOrderStatusEmail } from "../../../utils/sendEmail";
@@ -163,6 +163,9 @@ const userResolver = {
             if (newStatus === "Delivered") {
                 order.orderStatus = "Delivered";
                 order.deliveredAt = new Date();
+                if (order.paymentMethod === "Cash_on_Delivery") {
+                    order.paymentStatus = "Paid";
+                }
                 await order.save();
 
                 if (!order.userId) {

@@ -149,7 +149,7 @@ export interface ShippingAddress {
     country: string;
 }
 
-export type PaymentMethod = "Cash on Delivery" | "Card" | "UPI" | "NetBanking";
+export type PaymentMethod = "Cash_on_Delivery" | "Card" | "UPI" | "NetBanking";
 export type PaymentStatus = "Pending" | "Paid" | "Failed" | "Refunded";
 export type OrderStatus =
     | "Processing"
