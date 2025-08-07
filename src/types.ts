@@ -161,6 +161,15 @@ export type OrderStatus =
     | "Returned"
     | "Refunded";
 
+export interface CanceledOrder {
+    canceledAt: Date;
+    canceledOrderReason: string;
+}
+
+export interface ReturnedOrder {
+    returnedAt: Date;
+    returnedOrderReason: string;
+}
 
 export interface UserOrder {
     userId: string;
@@ -171,6 +180,11 @@ export interface UserOrder {
     orderStatus: OrderStatus;
     totalAmount: number;
     placedAt: Date;
+    cancelledOrder?: CanceledOrder | null;
+    packedAt?: Date | null;
+    shippedAt?: Date | null;
+    outForDeliveryAt?: Date | null;
+    returnedOrder?: ReturnedOrder | null;
     refundAt?: Date | null;
     deliveredAt?: Date | null;
 }

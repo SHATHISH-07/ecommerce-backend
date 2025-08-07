@@ -11,6 +11,8 @@ type Mutation {
     orderId: String!
     newStatus: OrderStatus!
   ): UpdateUserOrderStatusResponse!
+  initiateRefundOrder(orderId: String!): RefundOrderResponse!
+  confirmRefundOrder(orderId: String!): RefundOrderResponse!
 
   # User
   updateUserRole(userId: ID!, newRole: Role!): UserWithoutPassword!
@@ -57,4 +59,6 @@ type Mutation {
 
   # Order
   placeOrder(input: PlaceOrderInput!): PlaceOrderResponse!
+  cancelOrder(orderId: String!, reason: String!): CancelOrderResponse!
+  returnOrder(orderId: String!, reason: String!): ReturnOrderResponse!
 }

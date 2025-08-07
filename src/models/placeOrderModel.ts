@@ -1,5 +1,5 @@
 import { Schema, Document, model } from "mongoose";
-import { OrderedProduct, ShippingAddress, UserOrder } from "../types";
+import { CanceledOrder, OrderedProduct, ReturnedOrder, ShippingAddress, UserOrder } from "../types";
 
 type UserOrderDocument = UserOrder & Document;
 
@@ -25,6 +25,16 @@ const ShippingAddressSchema = new Schema<ShippingAddress>({
     country: { type: String, required: true },
 });
 
+const CanceledOrderSchema = new Schema<CanceledOrder>({
+    canceledAt: { type: Date, required: true },
+    canceledOrderReason: { type: String, required: true },
+})
+
+const ReturnedOrderSchema = new Schema<ReturnedOrder>({
+    returnedAt: { type: Date, required: true },
+    returnedOrderReason: { type: String, required: true },
+})
+
 const UserOrderSchema = new Schema<UserOrderDocument>(
     {
         userId: { type: String, required: true },
@@ -48,7 +58,12 @@ const UserOrderSchema = new Schema<UserOrderDocument>(
         totalAmount: { type: Number, required: true },
         placedAt: { type: Date, default: Date.now },
         refundAt: { type: Date, default: null },
+        packedAt: { type: Date, default: null },
+        shippedAt: { type: Date, default: null },
+        outForDeliveryAt: { type: Date, default: null },
         deliveredAt: { type: Date, default: null },
+        cancelledOrder: { type: CanceledOrderSchema, default: null },
+        returnedOrder: { type: ReturnedOrderSchema, default: null },
     },
     {
         timestamps: true,

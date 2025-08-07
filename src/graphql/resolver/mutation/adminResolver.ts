@@ -160,18 +160,34 @@ const userResolver = {
                 throw new Error("Order not found.");
             }
 
+            // Set timestamp based on status
+            const now = new Date();
+            switch (newStatus) {
+                case "Packed":
+                    order.packedAt = now;
+                    break;
+                case "Shipped":
+                    order.shippedAt = now;
+                    break;
+                case "Out_for_Delivery":
+                    order.outForDeliveryAt = now;
+                    break;
+                case "Delivered":
+                    order.deliveredAt = now;
+                    break;
+            }
+
+            order.orderStatus = newStatus;
+
+            // Mark COD orders as paid on delivery
+            if (newStatus === "Delivered" && order.paymentMethod === "Cash_on_Delivery") {
+                order.paymentStatus = "Paid";
+            }
+
+            await order.save();
+
+            // Handle logic only if status is Delivered
             if (newStatus === "Delivered") {
-                order.orderStatus = "Delivered";
-                order.deliveredAt = new Date();
-                if (order.paymentMethod === "Cash_on_Delivery") {
-                    order.paymentStatus = "Paid";
-                }
-                await order.save();
-
-                if (!order.userId) {
-                    throw new Error("User ID not found in order.");
-                }
-
                 const user = await userModel.findById(order.userId);
                 if (!user) {
                     throw new Error("User not found.");
@@ -180,13 +196,13 @@ const userResolver = {
                 for (const product of [...order.products]) {
                     const { returnPolicy, externalProductId, title } = product;
 
+                    // No return policy case
                     if (returnPolicy === "No return policy") {
-                        // Notify the user
                         await sendEmailNoReturnPolicy(
                             user.name,
                             order.shippingAddress.email,
                             `Thanks for purchasing ${title}.
-                    <br/> ${title} is not eligible for return.`
+                     <br/> ${title} is not eligible for return.`
                         );
 
                         // Add to user history
@@ -201,7 +217,6 @@ const userResolver = {
                             (p) => p.externalProductId !== externalProductId
                         );
 
-                        // Delete order if empty
                         if (order.products.length === 0) {
                             await OrderModel.deleteOne({ _id: orderId });
                         } else {
@@ -211,8 +226,8 @@ const userResolver = {
                         continue;
                     }
 
-                    // Delayed return policy handling
-                    const returnDays = extractReturnDays(returnPolicy as string);
+                    // Timed return logic
+                    const returnDays = extractReturnDays(returnPolicy);
                     if (!returnDays) continue;
 
                     setTimeout(async () => {
@@ -221,12 +236,14 @@ const userResolver = {
 
                         if (!latestOrder || !latestUser) return;
 
+                        // Push product to user history
                         latestUser.userOrderHistory.push({
                             orderId: externalProductId,
                             placedAt: latestOrder.placedAt,
                         });
                         await latestUser.save();
 
+                        // Remove product after return window expires
                         latestOrder.products = latestOrder.products.filter(
                             (p) => p.externalProductId !== externalProductId
                         );
@@ -236,11 +253,8 @@ const userResolver = {
                         } else {
                             await latestOrder.save();
                         }
-                    }, returnDays * 24 * 60 * 60 * 1000); // convert days to ms
+                    }, returnDays * 24 * 60 * 60 * 1000);
                 }
-            } else {
-                order.orderStatus = newStatus;
-                await order.save();
             }
 
             await sendOrderStatusEmail(
@@ -248,7 +262,7 @@ const userResolver = {
                 order.shippingAddress.email,
                 order.id,
                 Date.now(),
-                `Your product has been ${order.orderStatus}.
+                `Your product has been <b>${order.orderStatus}</b>.
          <br/> Any further updates will be sent to your email.`
             );
 
@@ -256,8 +270,80 @@ const userResolver = {
                 success: true,
                 message: `Order status updated successfully to ${order.orderStatus}`,
             };
-        }
+        },
 
+        initiateRefundOrder: async (
+            _: unknown,
+            args: { orderId: string },
+            context: MyContext
+        ): Promise<{ success: boolean; message: string }> => {
+            const currentUser = getCurrentUser(context);
+
+            if (!currentUser || currentUser.role !== "admin") {
+                throw new Error("Only admins can initiate a refund.");
+            }
+
+            const { orderId } = args;
+
+            const order = await OrderModel.findById(orderId);
+            if (!order) {
+                throw new Error("Order not found.");
+            }
+
+            if (order.orderStatus === "Refunded") {
+                throw new Error("Refund has already been initiated.");
+            }
+
+            order.orderStatus = "Refunded";
+            await order.save();
+
+            await sendOrderStatusEmail(
+                order.shippingAddress.name,
+                order.shippingAddress.email,
+                orderId,
+                Date.now(),
+                "Refund has been initiated. Amount will be credited to your account within 2–3 working days."
+            );
+
+            return {
+                success: true,
+                message: "Refund initiated successfully.",
+            };
+        },
+
+        confirmRefundOrder: async (
+            _: unknown,
+            args: { orderId: string },
+            context: MyContext
+        ): Promise<{ success: boolean; message: string }> => {
+            const currentUser = getCurrentUser(context);
+
+            if (!currentUser || currentUser.role !== "admin") {
+                throw new Error("Only admins can confirm a refund.");
+            }
+
+            const { orderId } = args;
+
+            const order = await OrderModel.findById(orderId);
+            if (!order) {
+                throw new Error("Order not found.");
+            }
+
+            await sendOrderStatusEmail(
+                order.shippingAddress.name,
+                order.shippingAddress.email,
+                orderId,
+                Date.now(),
+                "Your refund has been successfully processed and the amount has been credited to your account."
+            );
+
+            await OrderModel.findByIdAndDelete(orderId);
+
+            return {
+                success: true,
+                message: "Refund completed and order removed.",
+            };
+        }
     }
 
 }

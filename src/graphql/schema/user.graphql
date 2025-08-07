@@ -77,3 +77,8 @@ type UpdateUserOrderStatusResponse {
   success: Boolean!
   message: String!
 }
+
+type RefundOrderResponse {
+  success: Boolean!
+  message: String!
+}

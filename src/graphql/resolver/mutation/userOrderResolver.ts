@@ -3,7 +3,8 @@ import OTPModel from "../../../models/OTPModel";
 import { MyContext, userOrderInput } from "../../../types";
 import { getCurrentUser } from "../../../utils/getUser";
 import otpGenerator from "../../../utils/otpGenerator";
-import { sendOtpEmail } from "../../../utils/sendEmail";
+import { sendOrderStatusEmail, sendOtpEmail } from "../../../utils/sendEmail";
+import OrderModel from "../../../models/placeOrderModel";
 
 
 const userOrderResolver = {
@@ -74,7 +75,167 @@ const userOrderResolver = {
                 success: true,
             };
         },
-    },
-};
+
+        cancelOrder: async (
+            _: unknown,
+            args: { orderId: string; reason: string },
+            context: MyContext
+        ): Promise<{ success: boolean; message: string }> => {
+            const currentUser = getCurrentUser(context);
+
+            if (!currentUser || !currentUser.userId) {
+                throw new Error("Not authenticated, user must be logged in.");
+            }
+
+            const { orderId, reason } = args;
+
+            if (!orderId) {
+                throw new Error("Order ID is required.");
+            }
+
+            const order = await OrderModel.findById(orderId);
+            if (!order) {
+                throw new Error("Order not found.");
+            }
+
+            if (order.userId.toString() !== currentUser.userId.toString()) {
+                throw new Error("You are not authorized to cancel this order.");
+            }
+
+            const nonCancellableStatuses = ["Shipped", "Out for Delivery", "Delivered"];
+            if (nonCancellableStatuses.includes(order.orderStatus)) {
+                await sendOrderStatusEmail(
+                    order.shippingAddress.name,
+                    order.shippingAddress.email,
+                    orderId,
+                    new Date(order.placedAt).getTime(),
+                    `Order cannot be cancelled as it is already ${order.orderStatus}.`
+                );
+                throw new Error(`Order cannot be cancelled as it is already ${order.orderStatus}.`);
+            }
+
+            const placedAtTimestamp = order.placedAt ? new Date(order.placedAt).getTime() : Date.now();
+            const paymentMethod = order.paymentMethod?.toLowerCase();
+
+            const cancellationMessage =
+                paymentMethod === "cash_on_delivery"
+                    ? `Your order has been cancelled successfully.`
+                    : `Order has been cancelled successfully due to "${reason}". Refund will be initiated shortly.`;
+
+            await sendOrderStatusEmail(
+                order.shippingAddress.name,
+                order.shippingAddress.email,
+                orderId,
+                placedAtTimestamp,
+                cancellationMessage
+            );
+
+            if (paymentMethod === "cash_on_delivery") {
+                await OrderModel.findByIdAndDelete(orderId); // delete the order for COD
+                return {
+                    success: true,
+                    message: `Order (COD) has been cancelled and deleted successfully. Reason: ${reason}`,
+                };
+            }
+
+            // If it's prepaid, just mark as cancelled and keep it in DB
+            order.orderStatus = "Cancelled";
+            order.cancelledOrder = {
+                canceledAt: new Date(),
+                canceledOrderReason: reason,
+            };
+
+            await order.save();
+
+            return {
+                success: true,
+                message: `Order has been cancelled successfully. Reason: ${reason}`,
+            };
+        },
+
+        returnOrder: async (
+            _: unknown,
+            args: { orderId: string; reason: string },
+            context: MyContext
+        ): Promise<{ success: boolean; message: string }> => {
+            const currentUser = getCurrentUser(context);
+
+            if (!currentUser || !currentUser.userId) {
+                throw new Error("Not authenticated, user must be logged in.");
+            }
+
+            const { orderId, reason } = args;
+
+            if (!orderId) {
+                throw new Error("Order ID is required.");
+            }
+
+            const order = await OrderModel.findById(orderId);
+            if (!order) {
+                throw new Error("Order not found.");
+            }
+
+            if (order.userId.toString() !== currentUser.userId.toString()) {
+                throw new Error("You are not authorized to return this order.");
+            }
+
+            if (order.orderStatus !== "Delivered") {
+                throw new Error("Only delivered orders can be returned.");
+            }
+
+            if (!order.deliveredAt) {
+                throw new Error("Delivered date not found for this order.");
+            }
+
+            const now = new Date();
+            const deliveredDate = new Date(order.deliveredAt);
+
+            const returnableProducts = order.products.filter(product => {
+                const policy = product.returnPolicy?.toLowerCase();
+                if (!policy || policy === "no return policy") return false;
+
+                const match = policy.match(/(\d+)\s*days/);
+                if (!match) return false;
+
+                const returnDays = parseInt(match[1]);
+                const deadline = new Date(deliveredDate.getTime() + returnDays * 24 * 60 * 60 * 1000);
+
+                return now <= deadline;
+            });
+
+            if (returnableProducts.length === 0) {
+                await sendOrderStatusEmail(
+                    order.shippingAddress.name,
+                    order.shippingAddress.email,
+                    orderId,
+                    now.getTime(),
+                    `Order cannot be returned as none of the products are returnable or the return period has expired.`
+                );
+                throw new Error("No returnable products found or return window expired.");
+            }
+
+            order.orderStatus = "Returned";
+            order.returnedOrder = {
+                returnedAt: now,
+                returnedOrderReason: reason
+            };
+
+            await order.save();
+
+            await sendOrderStatusEmail(
+                order.shippingAddress.name,
+                order.shippingAddress.email,
+                orderId,
+                now.getTime(),
+                `Your order has been returned successfully. Reason: ${reason}. Refund will be processed shortly.`
+            );
+
+            return {
+                success: true,
+                message: `Order has been returned successfully. Reason: ${reason}`
+            };
+        }
+    }
+}
 
 export default userOrderResolver;

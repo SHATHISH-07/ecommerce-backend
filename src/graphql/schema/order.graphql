@@ -44,12 +44,32 @@ enum OrderStatus {
   Refunded
 }
 
+# type CanceledOrder {
+#   canceledAt: Date
+#   canceledOrderReason: String
+# }
+
+# type ReturnedOrder {
+#   returnedAt: Date
+#   returnedOrderReason: String
+# }
+
 type PlaceOrderResponse {
   message: String!
   success: Boolean!
 }
 
 type VerifyOtpResponse {
+  message: String!
+  success: Boolean!
+}
+
+type CancelOrderResponse {
+  message: String!
+  success: Boolean!
+}
+
+type ReturnOrderResponse {
   message: String!
   success: Boolean!
 }
