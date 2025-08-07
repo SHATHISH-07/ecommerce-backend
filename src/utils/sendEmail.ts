@@ -35,11 +35,40 @@ export const sendOrderSuccessEmail = async (name: string, phone: string, email: 
   const html = `
     <div style="font-family: Arial, sans-serif;">
       <h1>${name}</h1>
-      <h2>${message}</h2>
       <p>Order ID: ${order}</p>
       <p>Phone: ${phone}</p>
+      <h2>${message}</h2>
       <p>Your order has been successfully placed. We will deliver it to you soon.</p>
       <p>Thanks for shopping with us!</p>
+      <h2>Thank you for using our service! NexKart</h2>
+    </div>
+  `;
+
+  await sendMail(email, subject, html);
+}
+
+export const sendOrderStatusEmail = async (name: string, email: string, orderId: string, date: number, message: string) => {
+  const subject = "Order Status Updated";
+  const html = `
+    <div style="font-family: Arial, sans-serif;">
+      <h1>${name}</h1>
+      <p>Order ID: ${orderId}</p>
+      <p>Date: ${date}</p>
+      <h2>${message}</h2>
+      <p></p>
+      <h2>Thank you for using our service! NexKart</h2>
+    </div>
+  `;
+
+  await sendMail(email, subject, html);
+}
+
+export const sendEmailNoReturnPolicy = async (name: string, email: string, message: string) => {
+  const subject = "Return Policy";
+  const html = `
+    <div style="font-family: Arial, sans-serif;">
+      <h1>${name}</h1>
+      <h2>${message}</h2>
       <h2>Thank you for using our service! NexKart</h2>
     </div>
   `;

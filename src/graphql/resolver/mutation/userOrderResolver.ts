@@ -43,7 +43,6 @@ const userOrderResolver = {
                 totalAmount,
                 paymentMethod,
                 shippingAddress,
-
             });
 
             // Disabled due to trail account restrictions

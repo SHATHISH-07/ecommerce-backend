@@ -5,7 +5,7 @@ import { UserModelDoc, Role } from "../types";
 
 const UserOrderHistorySchema = new Schema(
     {
-        orderId: { type: String, required: true },
+        orderId: { type: Number, required: true },
         placedAt: { type: Date, required: true },
     },
     { _id: false }

@@ -10,6 +10,7 @@ const OrderedProductSchema = new Schema<OrderedProduct>({
     priceAtPurchase: { type: Number, required: true },
     quantity: { type: Number, required: true },
     totalPrice: { type: Number, required: true },
+    returnPolicy: { type: String, required: true },
 });
 
 const ShippingAddressSchema = new Schema<ShippingAddress>({
@@ -43,7 +44,7 @@ const UserPendingOrderSchema = new Schema<UserPendingOrderDocument>(
             type: String,
             enum: [
                 "Processing", "Packed", "Shipped",
-                "Out for Delivery", "Delivered",
+                "Out_for_Delivery", "Delivered",
                 "Cancelled", "Returned", "Refunded"
             ],
             default: "Processing",

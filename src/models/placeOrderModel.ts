@@ -10,6 +10,7 @@ const OrderedProductSchema = new Schema<OrderedProduct>({
     priceAtPurchase: { type: Number, required: true },
     quantity: { type: Number, required: true },
     totalPrice: { type: Number, required: true },
+    returnPolicy: { type: String, required: true },
 });
 
 const ShippingAddressSchema = new Schema<ShippingAddress>({
@@ -41,12 +42,13 @@ const UserOrderSchema = new Schema<UserOrderDocument>(
         },
         orderStatus: {
             type: String,
-            enum: ["Processing", "Packed", "Shipped", "Out for Delivery", "Delivered", "Cancelled", "Returned", "Refunded"],
+            enum: ["Processing", "Packed", "Shipped", "Out_for_Delivery", "Delivered", "Cancelled", "Returned", "Refunded"],
             default: "Processing",
         },
         totalAmount: { type: Number, required: true },
         placedAt: { type: Date, default: Date.now },
         refundAt: { type: Date, default: null },
+        deliveredAt: { type: Date, default: null },
     },
     {
         timestamps: true,

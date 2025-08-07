@@ -12,6 +12,7 @@ input OrderedProductInput {
   priceAtPurchase: Float!
   quantity: Int!
   totalPrice: Float!
+  returnPolicy: String!
 }
 
 input ShippingAddressInput {

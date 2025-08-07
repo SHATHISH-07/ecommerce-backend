@@ -6,6 +6,12 @@ type Mutation {
   resendEmailOTP(email: String!): ResendEmailOtpResponse!
   verifyOrderOtp(email: String!, otp: String!): VerifyOtpResponse!
 
+  # Admin
+  updateUserOrderStatus(
+    orderId: String!
+    newStatus: OrderStatus!
+  ): UpdateUserOrderStatusResponse!
+
   # User
   updateUserRole(userId: ID!, newRole: Role!): UserWithoutPassword!
   deactivateUser(userId: ID!): User!

@@ -53,7 +53,7 @@ export enum Role {
 }
 
 export interface UserOrderHistory {
-    orderId: string;
+    orderId: number;
     placedAt: Date;
 }
 
@@ -135,6 +135,7 @@ export interface OrderedProduct {
     priceAtPurchase: number;
     quantity: number;
     totalPrice: number;
+    returnPolicy: string;
 }
 export interface ShippingAddress {
     name: string;
@@ -150,7 +151,16 @@ export interface ShippingAddress {
 
 export type PaymentMethod = "Cash on Delivery" | "Card" | "UPI" | "NetBanking";
 export type PaymentStatus = "Pending" | "Paid" | "Failed" | "Refunded";
-export type OrderStatus = "Processing" | "Packed" | "Shipped" | "Out for Delivery" | "Delivered" | "Cancelled" | "Returned" | "Refunded";
+export type OrderStatus =
+    | "Processing"
+    | "Packed"
+    | "Shipped"
+    | "Out_for_Delivery"
+    | "Delivered"
+    | "Cancelled"
+    | "Returned"
+    | "Refunded";
+
 
 export interface UserOrder {
     userId: string;
@@ -162,6 +172,7 @@ export interface UserOrder {
     totalAmount: number;
     placedAt: Date;
     refundAt?: Date | null;
+    deliveredAt?: Date | null;
 }
 
 export interface userPendingOrder extends Omit<UserOrder, "placedAt" | "refundAt"> { }
