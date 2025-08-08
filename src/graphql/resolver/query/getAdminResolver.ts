@@ -1,5 +1,8 @@
+import categoryModel from "../../../models/categoryModel";
+import OrderModel from "../../../models/placeOrderModel";
+import productModel from "../../../models/productModel";
 import userModel from "../../../models/userModel";
-import { UserModelWithoutPassword, MyContext } from "../../../types";
+import { UserModelWithoutPassword, MyContext, OrderedProduct, UserOrder } from "../../../types";
 import { getCurrentUser } from "../../../utils/getUser";
 import { formatUser } from "../../../utils/userReturn";
 
@@ -95,6 +98,106 @@ const getAdminResolver = {
             const users = await userModel.find({ isBanned: true }).lean();
             return users.map(formatUser);
         },
+
+        getAllOrdersAdmin: async (
+            _: unknown,
+            __: unknown,
+            context: MyContext
+        ): Promise<UserOrder[]> => {
+            const currentUser = getCurrentUser(context);
+            if (!currentUser || currentUser.role !== "admin") {
+                throw new Error("Access denied. Admins only.");
+            }
+
+            const orders = await OrderModel.find().sort({ createdAt: -1 });
+
+            return orders;
+        },
+
+        getAllOrderByStatusAdmin: async (
+            _: unknown,
+            args: { status: string },
+            context: MyContext
+        ): Promise<UserOrder[]> => {
+            const currentUser = getCurrentUser(context);
+
+            if (!currentUser || currentUser.role !== "admin") {
+                throw new Error("Access denied. Admins only.");
+            }
+
+            const orders = await OrderModel.find({ orderStatus: args.status });
+
+            if (!orders || orders.length === 0) {
+                throw new Error(`No orders found with status: ${args.status}`);
+            }
+
+            return orders;
+        },
+
+        getAdminDashboardStats: async (
+            _: unknown,
+            __: unknown,
+            context: MyContext
+        ): Promise<{
+            totalOrders: number;
+            totalRevenue: number;
+            cancelledOrders: number;
+            returnedOrders: number;
+            totalProducts: number;
+            totalCategories: number;
+            totalUsers: number;
+            activeUsers: number;
+            bannedUsers: number;
+            deactivatedUsers: number;
+        }> => {
+            const currentUser = getCurrentUser(context);
+            if (!currentUser || currentUser.role !== "admin") {
+                throw new Error("Access denied. Admins only.");
+            }
+
+            const [
+                totalOrders,
+                revenueAgg,
+                cancelledOrders,
+                returnedOrders,
+                totalProducts,
+                totalCategories,
+                totalUsers,
+                activeUsers,
+                bannedUsers,
+                deactivatedUsers,
+            ] = await Promise.all([
+                OrderModel.countDocuments(),
+                OrderModel.aggregate([
+                    { $match: { paymentStatus: "Paid" } },
+                    { $group: { _id: null, totalRevenue: { $sum: "$totalAmount" } } }
+                ]),
+                OrderModel.countDocuments({ orderStatus: "Cancelled" }),
+                OrderModel.countDocuments({ orderStatus: "Returned" }),
+                productModel.countDocuments(),
+                categoryModel.countDocuments(),
+                userModel.countDocuments(),
+                userModel.countDocuments({ isActive: true }),
+                userModel.countDocuments({ isBanned: true }),
+                userModel.countDocuments({ isActive: false }),
+            ]);
+
+            const totalRevenue = revenueAgg[0]?.totalRevenue || 0;
+
+            return {
+                totalOrders,
+                totalRevenue,
+                cancelledOrders,
+                returnedOrders,
+                totalProducts,
+                totalCategories,
+                totalUsers,
+                activeUsers,
+                bannedUsers,
+                deactivatedUsers
+            };
+        }
+
     }
 };
 

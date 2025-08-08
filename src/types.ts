@@ -193,6 +193,20 @@ export interface userPendingOrder extends Omit<UserOrder, "placedAt" | "refundAt
 
 export interface userOrderInput extends Omit<userPendingOrder, "userId"> { }
 
+export type GetOrderStatusResponse = {
+    orderStatus: OrderStatus;
+    products: {
+        externalProductId: number;
+        title: string;
+        thumbnail?: string;
+        price: number;
+        quantity: number;
+        totalPrice: number;
+        returnPolicy: string;
+    }[];
+};
+
+
 // Product interface
 export interface Product {
     id: number;

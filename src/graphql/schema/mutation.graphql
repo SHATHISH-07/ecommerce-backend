@@ -59,6 +59,7 @@ type Mutation {
 
   # Order
   placeOrder(input: PlaceOrderInput!): PlaceOrderResponse!
+  placeOrderFromCart: PlaceOrderResponse!
   cancelOrder(orderId: String!, reason: String!): CancelOrderResponse!
   returnOrder(orderId: String!, reason: String!): ReturnOrderResponse!
 }

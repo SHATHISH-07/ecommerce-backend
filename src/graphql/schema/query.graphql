@@ -24,4 +24,14 @@ type Query {
 
   # Cart
   getUserCart: UserCart!
+
+  # Orders
+  getAllUserOrder: [UserOrder!]
+  getOrderById(orderId: String!): UserOrder!
+  getOrderStatus(orderId: String!): GetOrderStatusResponse!
+  getUserOrderByStatus(status: String!): [UserOrder!]
+  # Admin order actions
+  getAllOrdersAdmin: [UserOrder!]
+  getAllOrderByStatusAdmin(status: String!): [UserOrder!]
+  getAdminDashboardStats: AdminDashboardStats!
 }

@@ -82,3 +82,16 @@ type RefundOrderResponse {
   success: Boolean!
   message: String!
 }
+
+type AdminDashboardStats {
+  totalOrders: Int!
+  totalRevenue: Float!
+  cancelledOrders: Int!
+  returnedOrders: Int!
+  totalProducts: Int!
+  totalCategories: Int!
+  totalUsers: Int!
+  activeUsers: Int!
+  bannedUsers: Int!
+  deactivatedUsers: Int!
+}

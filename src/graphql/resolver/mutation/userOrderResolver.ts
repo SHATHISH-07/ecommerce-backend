@@ -1,10 +1,12 @@
 import PendingOrderModel from "../../../models/pendingOrderModel";
 import OTPModel from "../../../models/OTPModel";
-import { MyContext, userOrderInput } from "../../../types";
+import { MyContext, PaymentMethod, ShippingAddress, UserOrder, userOrderInput } from "../../../types";
 import { getCurrentUser } from "../../../utils/getUser";
 import otpGenerator from "../../../utils/otpGenerator";
 import { sendOrderStatusEmail, sendOtpEmail } from "../../../utils/sendEmail";
 import OrderModel from "../../../models/placeOrderModel";
+import Cart from "../../../models/cartModel";
+import productModel from "../../../models/productModel";
 
 
 const userOrderResolver = {
@@ -54,6 +56,91 @@ const userOrderResolver = {
             // const otp = otpGenerator();
 
             // const smsSent = await sendOtpSms(smsPhone, otp);
+
+
+            const otp = otpGenerator();
+
+            await sendOtpEmail(
+                shippingAddress.email,
+                otp,
+                "Place order verification OTP"
+            )
+
+            const newOtpEntry = new OTPModel({
+                verificationIdentifier: shippingAddress.email,
+                otp,
+            });
+            await newOtpEntry.save();
+
+            return {
+                message: "OTP sent to your email. Please verify to place the order.",
+                success: true,
+            };
+        },
+
+        placeOrderFromCart: async (
+            _: unknown,
+            args: { paymentMethod: PaymentMethod, shippingAddress: ShippingAddress },
+            context: MyContext
+        ): Promise<{ success: boolean; message: string; order?: UserOrder }> => {
+            const currentUser = getCurrentUser(context);
+            if (!currentUser || !currentUser.userId) {
+                throw new Error("User must be logged in to place an order");
+            }
+
+            const { shippingAddress, paymentMethod } = args;
+
+            if (!shippingAddress) {
+                throw new Error("Shipping address is required");
+            }
+
+            if (!paymentMethod) {
+                throw new Error("Payment method is required");
+            }
+
+            const userId = currentUser.userId;
+
+            const cart = await Cart.findOne({ userId });
+            if (!cart || cart.products.length === 0) {
+                throw new Error("Your cart is empty");
+            }
+
+            const orderedProducts = [];
+            let totalAmount = 0;
+
+            for (const cartItem of cart.products) {
+                const product = await productModel.findOne({ id: cartItem.productId });
+                if (!product) continue;
+
+                const productTotal = product.price * cartItem.quantity;
+
+                orderedProducts.push({
+                    externalProductId: product.id,
+                    title: product.title,
+                    thumbnail: product.thumbnail,
+                    priceAtPurchase: product.price,
+                    quantity: cartItem.quantity,
+                    totalPrice: productTotal,
+                    returnPolicy: product.returnPolicy || "No_Return",
+                });
+
+                totalAmount += productTotal;
+            }
+
+            if (orderedProducts.length === 0) {
+                throw new Error("All products in cart are invalid or unavailable");
+            }
+
+            const newOrder = await PendingOrderModel.create({
+                userId,
+                products: orderedProducts,
+                shippingAddress: shippingAddress,
+                paymentMethod: paymentMethod,
+                totalAmount,
+            });
+
+            cart.products = [];
+            await cart.save();
 
 
             const otp = otpGenerator();
