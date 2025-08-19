@@ -22,12 +22,16 @@ const getUserCartResolver = {
                     return {
                         userId: currentUser.userId,
                         products: [],
+                        totalItems: 0,
+                        maxLimit: 0
                     };
                 }
 
                 return {
                     userId: userCart.userId,
                     products: userCart.products,
+                    totalItems: userCart.totalItems,
+                    maxLimit: userCart.maxLimit
                 };
             } catch (error) {
                 console.error("Error in getUserCart:", error);

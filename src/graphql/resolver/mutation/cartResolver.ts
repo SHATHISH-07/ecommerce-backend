@@ -19,7 +19,7 @@ const cartResolver = {
                     return {
                         message: "User must be logged in to add to cart",
                         success: false,
-                        cart: { userId: "", products: [] },
+                        cart: { userId: "", products: [], totalItems: 0, maxLimit: 0 },
                     };
                 }
 
@@ -27,7 +27,7 @@ const cartResolver = {
                     return {
                         message: "Product ID is required",
                         success: false,
-                        cart: { userId: currentUser.userId, products: [] },
+                        cart: { userId: currentUser.userId, products: [], totalItems: 0, maxLimit: 0 },
                     };
                 }
 
@@ -35,7 +35,7 @@ const cartResolver = {
                     return {
                         message: "Quantity must be greater than 0",
                         success: false,
-                        cart: { userId: currentUser.userId, products: [] },
+                        cart: { userId: currentUser.userId, products: [], totalItems: 0, maxLimit: 0 },
                     };
                 }
 
@@ -44,7 +44,7 @@ const cartResolver = {
                     return {
                         message: "Invalid product ID or product does not exist",
                         success: false,
-                        cart: { userId: currentUser.userId, products: [] },
+                        cart: { userId: currentUser.userId, products: [], totalItems: 0, maxLimit: 0 },
                     };
                 }
 
@@ -102,7 +102,7 @@ const cartResolver = {
                 return {
                     message: "Something went wrong while adding to cart",
                     success: false,
-                    cart: { userId: "", products: [] },
+                    cart: { userId: "", products: [], totalItems: 0, maxLimit: 0 },
                 };
             }
         },

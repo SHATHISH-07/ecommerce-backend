@@ -110,6 +110,8 @@ export interface UserCart {
         createdAt: Date;
         updatedAt: Date | null;
     }[];
+    totalItems: number;
+    maxLimit: number;
 }
 
 export interface UserCartResponse extends UserCart { }

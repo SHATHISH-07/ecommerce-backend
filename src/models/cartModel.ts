@@ -30,7 +30,17 @@ const cartSchema: Schema<CartDoc> = new Schema(
                     default: null
                 }
             }
-        ]
+        ],
+        totalItems: {
+            type: Number,
+            required: true,
+            default: 0,
+        },
+        maxLimit: {
+            type: Number,
+            required: true,
+            default: 100,
+        },
     }
 );
 
