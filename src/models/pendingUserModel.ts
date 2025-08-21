@@ -60,6 +60,7 @@ const pendingUserSchema = new Schema<PendingUserModelDoc>({
     createdAt: {
         type: Date,
         default: Date.now,
+        expires: 900
     },
     updatedAt: {
         type: Date,
