@@ -11,6 +11,7 @@ type User {
   zipCode: String
   role: Role!
   password: String!
+  emailVerified: Boolean!
   isActive: Boolean!
   isBanned: Boolean!
   createdAt: String
@@ -30,6 +31,7 @@ type UserWithoutPassword {
   city: String
   zipCode: String
   role: Role!
+  emailVerified: Boolean!
   isActive: Boolean!
   isBanned: Boolean!
   createdAt: String
