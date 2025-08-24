@@ -28,8 +28,6 @@ export const fetchProducts = async (
     } catch (error) {
         console.error("Error fetching products from DB:", error);
         return null;
-    } finally {
-        await mongoose.disconnect();
     }
 };
 
@@ -43,8 +41,6 @@ export const fetchProductById = async (
     } catch (error) {
         console.error(`Error fetching product with id ${id}:`, error);
         return null;
-    } finally {
-        await mongoose.disconnect();
     }
 };
 
@@ -78,7 +74,5 @@ export const searchProducts = async (
     } catch (error) {
         console.error("Error searching products:", error);
         return null;
-    } finally {
-        await mongoose.disconnect();
     }
 };

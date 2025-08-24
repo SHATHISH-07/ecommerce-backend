@@ -9,6 +9,8 @@ type CartProduct {
 type UserCart {
   userId: String!
   products: [CartProduct!]!
+  totalItems: Int!
+  maxLimit: Int!
 }
 
 type AddCartResponse {

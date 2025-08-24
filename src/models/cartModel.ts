@@ -19,7 +19,8 @@ const cartSchema: Schema<CartDoc> = new Schema(
                 quantity: {
                     type: Number,
                     required: true,
-                    default: 1
+                    default: 1,
+                    max: 10
                 },
                 createdAt: {
                     type: Date,
@@ -43,6 +44,12 @@ const cartSchema: Schema<CartDoc> = new Schema(
         },
     }
 );
+
+cartSchema.pre("save", function (next) {
+    const cart = this as CartDoc;
+    cart.totalItems = cart.products.length;
+    next();
+});
 
 const Cart: Model<CartDoc> = mongoose.models.Cart || mongoose.model<CartDoc>("Cart", cartSchema);
 
