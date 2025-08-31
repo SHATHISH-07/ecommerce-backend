@@ -1,19 +1,18 @@
 type Category {
   slug: String!
   name: String!
-  url: String!
+  thumbnail: String
 }
 
 input CategoryInput {
   slug: String!
   name: String!
-  url: String!
+  thumbnail: String
 }
 
 input UpdateCategoryInput {
   slug: String
   name: String
-  url: String
 }
 
 type AddCategoryResponse {

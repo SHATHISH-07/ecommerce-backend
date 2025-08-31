@@ -2,6 +2,33 @@ import OrderModel from "../../../models/placeOrderModel";
 import { GetOrderStatusResponse, MyContext, UserOrder } from "../../../types";
 import { getCurrentUser } from "../../../utils/getUser";
 
+const transformOrder = (order: any): UserOrder | null => {
+
+    if (!order) return null;
+
+    if (!order.placedAt) return null;
+
+    return {
+        ...order,
+        id: order._id.toString(),
+        placedAt: order.placedAt.toISOString(),
+        packedAt: order.packedAt?.toISOString() || null,
+        shippedAt: order.shippedAt?.toISOString() || null,
+        outForDeliveryAt: order.outForDeliveryAt?.toISOString() || null,
+        deliveredAt: order.deliveredAt?.toISOString() || null,
+        refundAt: order.refundAt?.toISOString() || null,
+        cancelledOrder: order.cancelledOrder ? {
+            ...order.cancelledOrder,
+            canceledAt: order.cancelledOrder.canceledAt?.toISOString()
+        } : null,
+        returnedOrder: order.returnedOrder ? {
+            ...order.returnedOrder,
+            returnedAt: order.returnedOrder.returnedAt?.toISOString()
+        } : null,
+    };
+};
+
+
 const getUserOrderResolver = {
     Query: {
         getAllUserOrder: async (
@@ -12,11 +39,15 @@ const getUserOrderResolver = {
             const currentUser = getCurrentUser(context);
             if (!currentUser || !currentUser.userId) throw new Error("Not authenticated");
 
-            const orders = await OrderModel.find({ userId: currentUser.userId });
+            const orders = await OrderModel.find({
+                userId: currentUser.userId,
+            }).lean();
 
-            if (!orders || orders.length === 0) throw new Error("No orders found.");
+            if (!orders || orders.length === 0) {
+                return [];
+            }
 
-            return orders;
+            return orders.map(transformOrder).filter(order => order !== null) as UserOrder[];
         },
 
         getOrderById: async (
@@ -32,11 +63,15 @@ const getUserOrderResolver = {
             const order = await OrderModel.findOne({
                 _id: args.orderId,
                 userId: currentUser.userId,
-            });
+            }).lean();
 
             if (!order) throw new Error("Order not found.");
 
-            return order;
+            const transformedOrder = transformOrder(order);
+            if (!transformedOrder) {
+                throw new Error("Order data is invalid and could not be processed.");
+            }
+            return transformedOrder;
         },
 
         getOrderStatus: async (
@@ -49,10 +84,11 @@ const getUserOrderResolver = {
 
             if (!args.orderId) throw new Error("Order ID is required.");
 
+            // Use .lean() for consistency and performance
             const order = await OrderModel.findOne({
                 _id: args.orderId,
                 userId: currentUser.userId,
-            });
+            }).lean();
 
             if (!order) throw new Error("Order not found.");
 
@@ -60,7 +96,7 @@ const getUserOrderResolver = {
                 orderStatus: order.orderStatus,
                 products: order.products.map((product) => ({
                     title: product.title,
-                    price: product.priceAtPurchase,
+                    priceAtPurchase: product.priceAtPurchase,
                     quantity: product.quantity,
                     totalPrice: product.totalPrice,
                     thumbnail: product.thumbnail,
@@ -81,13 +117,13 @@ const getUserOrderResolver = {
             const orders = await OrderModel.find({
                 userId: currentUser.userId,
                 orderStatus: args.status,
-            });
+            }).lean();
 
             if (!orders || orders.length === 0) {
-                throw new Error(`No orders found with status: ${args.status}`);
+                return [];
             }
 
-            return orders;
+            return orders.map(transformOrder).filter(order => order !== null) as UserOrder[];
         },
     },
 };

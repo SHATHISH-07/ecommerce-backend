@@ -38,16 +38,16 @@ const context = async ({ req }: ContextType): Promise<MyContext> => {
                 return {};
             }
 
-            const currentUser = await userModel.findById(userId);
+            const currentUser = await userModel.findById(userId).lean();
             if (!currentUser) {
                 // console.log("User not found in DB for ID:", userId);
                 return {};
             }
 
-            // console.log("Current User ID:", currentUser.id);
+            // console.log("Current User ID:", currentUser._id.toString());
 
             return {
-                userId: currentUser.id,
+                userId: currentUser._id.toString(),
                 name: currentUser.name,
                 username: currentUser.username,
                 email: currentUser.email,
@@ -56,6 +56,7 @@ const context = async ({ req }: ContextType): Promise<MyContext> => {
                 role: currentUser.role,
                 country: currentUser.country,
                 emailVerified: currentUser.emailVerified,
+                userOrderHistory: currentUser.userOrderHistory,
                 state: currentUser.state,
                 city: currentUser.city,
                 zipCode: currentUser.zipCode,

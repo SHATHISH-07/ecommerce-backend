@@ -23,6 +23,7 @@ input ShippingAddressInput {
   phone: String!
   address: String!
   city: String!
+  isVerified: Boolean
   state: String!
   zipCode: String!
   country: String!
@@ -80,17 +81,18 @@ type ShippingAddress {
 }
 
 type CanceledOrder {
-  canceledAt: String!
-  canceledOrderReason: String!
+  canceledAt: String
+  canceledOrderReason: String
 }
 
 type ReturnedOrder {
-  returnedAt: String!
-  returnedOrderReason: String!
+  returnedAt: String
+  returnedOrderReason: String
 }
 
 type UserOrder {
-  userId: ID!
+  id: String!
+  userId: String!
   products: [OrderedProduct!]!
   shippingAddress: ShippingAddress!
   paymentMethod: PaymentMethod!
@@ -138,7 +140,7 @@ type ProductStatus {
   externalProductId: Int!
   title: String!
   thumbnail: String
-  price: Float!
+  priceAtPurchase: Float!
   quantity: Int!
   totalPrice: Float!
   returnPolicy: String!

@@ -19,9 +19,8 @@ const categorySchema: Schema<CategoryDoc> = new Schema(
             required: true,
             trim: true,
         },
-        url: {
+        thumbnail: {
             type: String,
-            required: true,
         },
     },
     {

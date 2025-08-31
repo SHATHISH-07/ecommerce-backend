@@ -1,4 +1,4 @@
-import { fetchProducts, fetchProductById, searchProducts } from "../../../services/productService";
+import { fetchProducts, fetchProductById, searchProducts, fetchProductsByIds } from "../../../services/productService";
 import { Product, FetchProductsResponse } from "../../../types";
 
 const getProductsResolver = {
@@ -38,6 +38,17 @@ const getProductsResolver = {
                 return null;
             }
         },
+
+        getProductsByIds: async (_: unknown, args: { ids: number[] }) => {
+            try {
+                const products = await fetchProductsByIds(args.ids);
+                return products;
+            } catch (error) {
+                console.error("Error fetching products by ids:", error);
+                return null;
+            }
+        },
+
 
         searchProducts: async (
             _: unknown,

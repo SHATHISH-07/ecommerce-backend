@@ -12,6 +12,7 @@ export const getCurrentUser = (context: MyContext) => {
         role: context.role,
         country: context.country,
         emailVerified: context.emailVerified,
+        userOrderHistory: context.userOrderHistory,
         state: context.state,
         city: context.city,
         zipCode: context.zipCode,

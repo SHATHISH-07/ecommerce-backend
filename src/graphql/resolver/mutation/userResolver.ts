@@ -1,5 +1,5 @@
 import userModel from "../../../models/userModel";
-import { MyContext, UserModelWithoutPassword } from "../../../types";
+import { MyContext, UpdateUserProfileInput, UserModelWithoutPassword } from "../../../types";
 import bcrypt from "bcrypt";
 import { getCurrentUser } from "../../../utils/getUser";
 import { formatUser } from "../../../utils/userReturn";
@@ -11,57 +11,63 @@ const userResolver = {
     Mutation: {
         updateUserProfile: async (
             _: unknown,
-            args: {
-                input: {
-                    name?: string;
-                    username?: string;
-                    email?: string;
-                    address?: string;
-                    phone?: string;
-                    country?: string;
-                    state?: string;
-                    city?: string;
-                    zipCode?: string;
-                };
-            },
+            args: { input: UpdateUserProfileInput },
             context: MyContext
         ): Promise<UserModelWithoutPassword> => {
-
-            // console.log("updateUserProfile context", context);
-
             const currentUser = getCurrentUser(context);
-
             const user = await userModel.findById(currentUser.userId);
-            if (!user) {
-                throw new Error("User not found.");
-            }
+            if (!user) throw new Error("User not found.");
 
-            const {
-                name,
-                username,
-                email,
-                address,
-                phone,
-                country,
-                state,
-                city,
-                zipCode,
-            } = args.input;
+            const { name, username, address, phone, country, state, city, zipCode } = args.input;
 
-            if (name) user.name = name;
-            if (username) user.username = username;
-            if (email) user.email = email;
-            if (address) user.address = address;
-            if (phone) user.phone = phone;
-            if (country) user.country = country;
-            if (state) user.state = state;
-            if (city) user.city = city;
-            if (zipCode) user.zipCode = zipCode;
+            if (name !== undefined) user.name = name;
+            if (username !== undefined) user.username = username;
+            if (address !== undefined) user.address = address;
+            if (phone !== undefined) user.phone = phone;
+            if (country !== undefined) user.country = country;
+            if (state !== undefined) user.state = state;
+            if (city !== undefined) user.city = city;
+            if (zipCode !== undefined) user.zipCode = zipCode;
 
             await user.save();
 
             return formatUser(user);
         },
+
+        updateUserEmail: async (
+            _: unknown,
+            args: { input: { email: string } },
+            context: MyContext
+        ): Promise<UserModelWithoutPassword> => {
+            const currentUser = getCurrentUser(context);
+            const user = await userModel.findById(currentUser.userId);
+            if (!user) throw new Error("User not found.");
+
+            const { email } = args.input;
+
+            if (!email || email === user.email) {
+                throw new Error("New email must be different from the current email.");
+            }
+
+            // ✅ ensure email is not already taken
+            const existingUser = await userModel.findOne({ email });
+            if (existingUser && existingUser.id !== user.id) {
+                throw new Error("Email is already in use.");
+            }
+
+            user.email = email;
+            user.emailVerified = false;
+
+            const otp = otpGenerator();
+            await OTPModel.deleteMany({ verificationIdentifier: email });
+            await OTPModel.create({ verificationIdentifier: email, otp });
+
+            await sendOtpEmail(email, otp, "Email Updated Verification OTP");
+            await user.save();
+
+            return formatUser(user);
+        },
+
 
         updatePassword: async (
             _: unknown,
@@ -118,9 +124,9 @@ const userResolver = {
 
             const message = "Reset Password Verification OTP";
 
-            await OTPModel.deleteMany({ email });
+            await OTPModel.deleteMany({ verificationIdentifier: email });
 
-            await OTPModel.create({ email, otp });
+            await OTPModel.create({ verificationIdentifier: email, otp });
 
             await sendOtpEmail(email, otp, message);
 

@@ -2,11 +2,13 @@ import OTPModel from "../../../models/OTPModel";
 import PendingOrderModel from "../../../models/pendingOrderModel";
 import PendingUserModel from "../../../models/pendingUserModel";
 import OrderModel from "../../../models/placeOrderModel";
+import userModel from "../../../models/userModel";
 import UserModel from "../../../models/userModel";
 import { MyContext, ResendOTPResponse, UserModelWithoutPassword } from "../../../types";
 import { getCurrentUser } from "../../../utils/getUser";
 import otpGenerator from "../../../utils/otpGenerator";
 import { sendOrderSuccessEmail, sendOtpEmail, sendSignupSuccessEmail } from "../../../utils/sendEmail";
+import { formatUser } from "../../../utils/userReturn";
 
 const otpResolver = {
     Mutation: {
@@ -17,12 +19,13 @@ const otpResolver = {
             const { email, otp } = args;
 
             const savedOtp = await OTPModel.findOne({ verificationIdentifier: email });
-            if (!savedOtp) throw new Error("OTP expired or not found");
+            if (!savedOtp) throw new Error("OTP expired or not found. Please request a new one.");
 
             const now = new Date();
             const diffMs = now.getTime() - savedOtp.createdAt.getTime();
+
+            // CORRECTED LOGIC: Do NOT delete the OTP here. Only throw the error.
             if (diffMs > 2 * 60 * 1000) {
-                await OTPModel.deleteOne({ verificationIdentifier: email });
                 throw new Error("OTP has expired. Please request a new one.");
             }
 
@@ -30,7 +33,7 @@ const otpResolver = {
             if (!isMatch) throw new Error("Invalid OTP");
 
             const pendingUser = await PendingUserModel.findOne({ email });
-            if (!pendingUser) throw new Error("Pending user not found");
+            if (!pendingUser) throw new Error("Pending user not found. Your session may have expired.");
 
             const {
                 name,
@@ -64,8 +67,9 @@ const otpResolver = {
 
             sendSignupSuccessEmail(savedUser.email, savedUser.name, savedUser.username).catch(console.error);
 
+            // This is the correct place to delete the OTP and PendingUser
             await Promise.all([
-                OTPModel.deleteOne({ email }),
+                OTPModel.deleteOne({ verificationIdentifier: email }),
                 PendingUserModel.deleteOne({ email })
             ]);
 
@@ -91,6 +95,42 @@ const otpResolver = {
             };
         },
 
+        verifyEmailUpdateOtp: async (
+            _: unknown,
+            args: { email: string; otp: string },
+            context: MyContext
+        ): Promise<Partial<UserModelWithoutPassword>> => {
+            const { email, otp } = args;
+
+            const currentUser = getCurrentUser(context);
+            const user = await userModel.findById(currentUser.userId);
+            if (!user) throw new Error("User not found.");
+
+            const savedOtp = await OTPModel.findOne({ verificationIdentifier: email });
+            if (!savedOtp) throw new Error("OTP expired or not found. Please request a new one.");
+
+            const now = new Date();
+            const diffMs = now.getTime() - savedOtp.createdAt.getTime();
+
+            // CORRECTED LOGIC: Do NOT delete the OTP here. Only throw the error.
+            if (diffMs > 2 * 60 * 1000) {
+                throw new Error("OTP has expired. Please request a new one.");
+            }
+
+            const isMatch = await savedOtp.compareOTP(otp);
+            if (!isMatch) throw new Error("Invalid OTP");
+
+            user.email = email;
+            user.emailVerified = true;
+            await user.save();
+
+            // This is the correct place to delete the OTP
+            await OTPModel.deleteOne({ verificationIdentifier: email });
+
+            return formatUser(user);
+        },
+
+        // ... (rest of your resolver code is unchanged)
         verifyResetPasswordOtp: async (
             _: unknown,
             args: { email: string; otp: string },
@@ -122,44 +162,33 @@ const otpResolver = {
             };
         },
 
-        resendEmailOTP: async (
-            _: unknown,
-            args: { email: string }
-        ): Promise<ResendOTPResponse> => {
+        resendEmailOTP: async (_: unknown, args: { email: string }): Promise<ResendOTPResponse> => {
             const { email } = args;
 
             const pendingUser = await PendingUserModel.findOne({ email });
-            if (!pendingUser) {
-                throw new Error("Pending user not found for the given email");
+            const existingUser = await userModel.findOne({ email });
+
+            if (!pendingUser && !existingUser) {
+                throw new Error("No user found for the given email");
             }
 
             const existingOtp = await OTPModel.findOne({ verificationIdentifier: email });
-            if (
-                existingOtp &&
-                existingOtp.createdAt &&
-                Date.now() - existingOtp.createdAt.getTime() < 60000
-            ) {
+            if (existingOtp && Date.now() - existingOtp.createdAt.getTime() < 60000) {
                 throw new Error("Please wait at least 1 minute before requesting a new OTP");
             }
 
             const otp = otpGenerator();
-
-            const message = "Resented OTP to your registered email";
-
             let otpDoc = await OTPModel.findOne({ verificationIdentifier: email });
             if (!otpDoc) {
-                otpDoc = new OTPModel({ email, otp });
+                otpDoc = new OTPModel({ verificationIdentifier: email, otp });
             } else {
                 otpDoc.otp = otp;
             }
 
             await otpDoc.save();
-            await sendOtpEmail(email, otp, message);
+            await sendOtpEmail(email, otp, "Your verification OTP");
 
-            return {
-                success: true,
-                message: "OTP resent successfully",
-            };
+            return { success: true, message: "OTP resent successfully" };
         },
 
 

@@ -1,7 +1,7 @@
 type Query {
   # Users
   getCurrentUser: UserWithoutPassword!
-  getUser(username: String, email: String, name: String): UserWithoutPassword!
+  getUser(username: String, email: String, userId: String): UserWithoutPassword!
   getUsers: [UserWithoutPassword!]!
   getUserById(id: ID!): UserWithoutPassword!
   getUsersByRole(role: Role!): [UserWithoutPassword!]!
@@ -15,6 +15,7 @@ type Query {
   # Products
   getAllProducts(limit: Int, skip: Int): FetchProductsResponse!
   getProductById(id: Int!): Product!
+  getProductsByIds(ids: [Int!]!): [Product]
   searchProducts(query: String!, limit: Int, skip: Int): FetchProductsResponse!
 
   # Categories
@@ -25,13 +26,14 @@ type Query {
   # Cart
   getUserCart: UserCart!
 
-  # Orders
-  getAllUserOrder: [UserOrder!]
-  getOrderById(orderId: String!): UserOrder!
-  getOrderStatus(orderId: String!): GetOrderStatusResponse!
-  getUserOrderByStatus(status: String!): [UserOrder!]
+  # Order
+  getAllUserOrder: [UserOrder!]!
+  getOrderById(orderId: String!): UserOrder
+  getOrderStatus(orderId: String!): GetOrderStatusResponse
+  getUserOrderByStatus(status: OrderStatus!): [UserOrder!]!
+
   # Admin order actions
-  getAllOrdersAdmin: [UserOrder!]
+  getAllOrdersAdmin: [UserOrder]
   getAllOrderByStatusAdmin(status: String!): [UserOrder!]
   getAdminDashboardStats: AdminDashboardStats!
 }

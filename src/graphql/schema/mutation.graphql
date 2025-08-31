@@ -5,6 +5,7 @@ type Mutation {
   verifyEmailOtp(email: String!, otp: String!): UserWithoutPassword!
   resendEmailOTP(email: String!): ResendEmailOtpResponse!
   verifyOrderOtp(email: String!, otp: String!): VerifyOtpResponse!
+  verifyEmailUpdateOtp(email: String!, otp: String!): UserWithoutPassword!
 
   # Admin
   updateUserOrderStatus(
@@ -20,6 +21,7 @@ type Mutation {
   activateUser(userId: ID!): User!
   banUser(userId: ID!): UserWithoutPassword!
   updateUserProfile(input: UpdateUserProfileInput): UserWithoutPassword!
+  updateUserEmail(input: UpdateUserEmailInput!): UserWithoutPassword!
   updatePassword(
     currentPassword: String!
     newPassword: String!

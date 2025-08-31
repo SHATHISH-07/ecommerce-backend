@@ -22,13 +22,13 @@ const getUserResolver = {
 
         getUser: async (
             _: unknown,
-            args: { username?: string; email?: string; name?: string }
+            args: { username?: string; email?: string; userId?: string }
         ): Promise<UserModelWithoutPassword> => {
             const searchParams: { [key: string]: string } = {};
 
             if (args.username) searchParams.username = args.username;
             if (args.email) searchParams.email = args.email;
-            if (args.name) searchParams.name = args.name;
+            if (args.userId) searchParams._id = args.userId;
 
             if (Object.keys(searchParams).length === 0) {
                 throw new Error("At least one search parameter must be provided.");

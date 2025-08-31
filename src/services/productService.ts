@@ -44,6 +44,21 @@ export const fetchProductById = async (
     }
 };
 
+export const fetchProductsByIds = async (
+    ids: number[]
+): Promise<Product[] | null> => {
+    try {
+        await mongoose.connect(MONGO_URI);
+
+        const products = await productModel.find({ id: { $in: ids } }).lean();
+        return products;
+    } catch (error) {
+        console.error("Error fetching products by ids:", error);
+        return null;
+    }
+};
+
+
 export const searchProducts = async (
     query: string,
     limit: number,

@@ -10,6 +10,7 @@ type User {
   city: String
   zipCode: String
   role: Role!
+  userOrderHistory: [UserOrderHistory]
   password: String!
   emailVerified: Boolean!
   isActive: Boolean!
@@ -32,6 +33,7 @@ type UserWithoutPassword {
   zipCode: String
   role: Role!
   emailVerified: Boolean!
+  userOrderHistory: [UserOrderHistory]
   isActive: Boolean!
   isBanned: Boolean!
   createdAt: String
@@ -39,11 +41,16 @@ type UserWithoutPassword {
   updatedBy: ID
 }
 
+type UserOrderHistory {
+  orderId: Int!
+  placedAt: String!
+}
+
 input UpdateUserProfileInput {
   name: String
   address: String
   phone: String
-  email: String
+  username: String
   country: String
   state: String
   city: String
@@ -96,4 +103,8 @@ type AdminDashboardStats {
   activeUsers: Int!
   bannedUsers: Int!
   deactivatedUsers: Int!
+}
+
+input UpdateUserEmailInput {
+  email: String!
 }

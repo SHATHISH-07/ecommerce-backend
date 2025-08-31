@@ -37,7 +37,7 @@ export interface UserModelWithoutPassword {
     state: string;
     city: string;
     zipCode: string;
-    emailVerified: boolean;
+    emailVerified?: boolean;
     role: Role;
     userOrderHistory: UserOrderHistory[];
     isActive: boolean;
@@ -57,6 +57,20 @@ export interface UserOrderHistory {
     placedAt: Date;
 }
 
+export interface UpdateUserProfileInput {
+    name?: string;
+    username?: string;
+    email?: string;
+    address?: string;
+    phone?: string;
+    country?: string;
+    state?: string;
+    city?: string;
+    zipCode?: string;
+}
+
+
+
 // Context interface for user session
 export interface MyContext {
     userId?: string;
@@ -68,6 +82,7 @@ export interface MyContext {
     country?: string;
     state?: string;
     emailVerified?: boolean
+    userOrderHistory?: UserOrderHistory[];
     city?: string;
     zipCode?: string;
     isActive?: boolean;
@@ -143,7 +158,7 @@ export interface ShippingAddress {
     name: string;
     email: string;
     phone: string;
-    isVerified: boolean;
+    isVerified?: boolean;
     address: string;
     city: string;
     state: string;
@@ -174,6 +189,7 @@ export interface ReturnedOrder {
 }
 
 export interface UserOrder {
+    id: string;
     userId: string;
     products: OrderedProduct[];
     shippingAddress: ShippingAddress;
@@ -201,7 +217,7 @@ export type GetOrderStatusResponse = {
         externalProductId: number;
         title: string;
         thumbnail?: string;
-        price: number;
+        priceAtPurchase: number;
         quantity: number;
         totalPrice: number;
         returnPolicy: string;
@@ -318,7 +334,7 @@ export interface BulkProductResponse {
 export interface Category {
     slug: string;
     name: string;
-    url: string;
+    thumbnail: string;
 }
 
 export interface CategoryResponse {
