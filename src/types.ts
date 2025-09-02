@@ -129,12 +129,15 @@ export interface UserCart {
     maxLimit: number;
 }
 
-export interface UserCartResponse extends UserCart { }
+export interface UserCartResponse extends UserCart {
+    id: string
+}
 
 export interface addCartResponse {
     message: string;
     success: boolean;
     cart: UserCart;
+    id?: string
 }
 
 export interface updateCartResponse extends addCartResponse { }

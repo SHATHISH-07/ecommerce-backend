@@ -189,7 +189,7 @@ const userOrderResolver = {
                 throw new Error("You are not authorized to cancel this order.");
             }
 
-            const nonCancellableStatuses = ["Shipped", "Out for Delivery", "Delivered"];
+            const nonCancellableStatuses = ["Shipped", "Out_for_Delivery", "Delivered"];
             if (nonCancellableStatuses.includes(order.orderStatus)) {
                 await sendOrderStatusEmail(
                     order.shippingAddress.name,
@@ -225,7 +225,6 @@ const userOrderResolver = {
                 };
             }
 
-            // If it's prepaid, just mark as cancelled and keep it in DB
             order.orderStatus = "Cancelled";
             order.cancelledOrder = {
                 canceledAt: new Date(),

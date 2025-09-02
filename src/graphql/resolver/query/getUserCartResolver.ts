@@ -20,6 +20,7 @@ const getUserCartResolver = {
 
                 if (!userCart) {
                     return {
+                        id: "",
                         userId: currentUser.userId,
                         products: [],
                         totalItems: 0,
@@ -28,6 +29,7 @@ const getUserCartResolver = {
                 }
 
                 return {
+                    id: userCart.id,
                     userId: userCart.userId,
                     products: userCart.products,
                     totalItems: userCart.totalItems,

@@ -45,6 +45,16 @@ const cartSchema: Schema<CartDoc> = new Schema(
     }
 );
 
+cartSchema.set("toJSON", {
+    virtuals: true,
+    versionKey: false,
+    transform: (_, ret) => {
+        ret.id = ret.id.toString();
+        delete ret.id;
+    },
+});
+
+
 cartSchema.pre("save", function (next) {
     const cart = this as CartDoc;
     cart.totalItems = cart.products.length;
