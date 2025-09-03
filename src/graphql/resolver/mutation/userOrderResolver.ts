@@ -218,7 +218,7 @@ const userOrderResolver = {
             );
 
             if (paymentMethod === "cash_on_delivery") {
-                await OrderModel.findByIdAndDelete(orderId); // delete the order for COD
+                await OrderModel.findByIdAndDelete(orderId);
                 return {
                     success: true,
                     message: `Order (COD) has been cancelled and deleted successfully. Reason: ${reason}`,

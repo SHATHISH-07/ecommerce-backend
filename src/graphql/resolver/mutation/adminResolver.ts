@@ -150,7 +150,6 @@ const userResolver = {
             }
 
             const { orderId, newStatus } = args;
-
             if (!orderId) {
                 throw new Error("Order ID is required.");
             }
@@ -184,77 +183,43 @@ const userResolver = {
                 order.paymentStatus = "Paid";
             }
 
-            await order.save();
-
-            // Handle logic only if status is Delivered
+            // Special logic only when Delivered
             if (newStatus === "Delivered") {
                 const user = await userModel.findById(order.userId);
                 if (!user) {
                     throw new Error("User not found.");
                 }
 
-                for (const product of [...order.products]) {
+                for (const product of order.products) {
                     const { returnPolicy, externalProductId, title } = product;
 
-                    // No return policy case
+                    // Default: no expiry
+                    let expiryDate: Date | null = null;
+
                     if (returnPolicy === "No return policy") {
+                        // Keep in DB for 2 days, then remove
+                        expiryDate = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000);
+
                         await sendEmailNoReturnPolicy(
                             user.name,
                             order.shippingAddress.email,
                             `Thanks for purchasing ${title}.
-                     <br/> ${title} is not eligible for return.`
+           <br/> ${title} is not eligible for return.`
                         );
-
-                        // Add to user history
-                        user.userOrderHistory.push({
-                            orderId: externalProductId,
-                            placedAt: order.placedAt,
-                        });
-                        await user.save();
-
-                        // Remove product from order
-                        order.products = order.products.filter(
-                            (p) => p.externalProductId !== externalProductId
-                        );
-
-                        if (order.products.length === 0) {
-                            await OrderModel.deleteOne({ _id: orderId });
-                        } else {
-                            await order.save();
+                    } else {
+                        const returnDays = extractReturnDays(returnPolicy);
+                        if (returnDays) {
+                            expiryDate = new Date(now.getTime() + returnDays * 24 * 60 * 60 * 1000);
                         }
-
-                        continue;
                     }
 
-                    // Timed return logic
-                    const returnDays = extractReturnDays(returnPolicy);
-                    if (!returnDays) continue;
-
-                    setTimeout(async () => {
-                        const latestOrder = await OrderModel.findById(orderId);
-                        const latestUser = await userModel.findById(order.userId as string);
-
-                        if (!latestOrder || !latestUser) return;
-
-                        // Push product to user history
-                        latestUser.userOrderHistory.push({
-                            orderId: externalProductId,
-                            placedAt: latestOrder.placedAt,
-                        });
-                        await latestUser.save();
-
-                        // Remove product after return window expires
-                        latestOrder.products = latestOrder.products.filter(
-                            (p) => p.externalProductId !== externalProductId
-                        );
-
-                        if (latestOrder.products.length === 0) {
-                            await OrderModel.deleteOne({ _id: orderId });
-                        } else {
-                            await latestOrder.save();
-                        }
-                    }, returnDays * 24 * 60 * 60 * 1000);
+                    // Persist expiry in DB for each product
+                    if (expiryDate) {
+                        product.returnExpiresAt = expiryDate; // <-- add this field in schema if not already
+                    }
                 }
+
+                await order.save();
             }
 
             await sendOrderStatusEmail(
@@ -263,7 +228,7 @@ const userResolver = {
                 order.id,
                 Date.now(),
                 `Your product has been <b>${order.orderStatus}</b>.
-         <br/> Any further updates will be sent to your email.`
+     <br/> Any further updates will be sent to your email.`
             );
 
             return {
@@ -271,6 +236,7 @@ const userResolver = {
                 message: `Order status updated successfully to ${order.orderStatus}`,
             };
         },
+
 
         initiateRefundOrder: async (
             _: unknown,

@@ -25,6 +25,12 @@ const transformOrder = (order: any): UserOrder | null => {
             ...order.returnedOrder,
             returnedAt: order.returnedOrder.returnedAt?.toISOString()
         } : null,
+        products: order.products.map((p: any) => ({
+            ...p,
+            returnExpiresAt: p.returnExpiresAt
+                ? new Date(p.returnExpiresAt).toISOString()
+                : null,
+        })),
     };
 };
 

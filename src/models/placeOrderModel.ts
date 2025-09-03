@@ -11,6 +11,7 @@ const OrderedProductSchema = new Schema<OrderedProduct>({
     quantity: { type: Number, required: true },
     totalPrice: { type: Number, required: true },
     returnPolicy: { type: String, required: true },
+    returnExpiresAt: { type: Date, default: null }
 });
 
 const ShippingAddressSchema = new Schema<ShippingAddress>({

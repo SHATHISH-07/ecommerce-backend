@@ -156,6 +156,7 @@ export interface OrderedProduct {
     quantity: number;
     totalPrice: number;
     returnPolicy: string;
+    returnExpiresAt?: Date;
 }
 export interface ShippingAddress {
     name: string;
