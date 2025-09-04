@@ -6,6 +6,10 @@ type Mutation {
   resendEmailOTP(email: String!): ResendEmailOtpResponse!
   verifyOrderOtp(email: String!, otp: String!): VerifyOtpResponse!
   verifyEmailUpdateOtp(email: String!, otp: String!): UserWithoutPassword!
+  verifyPasswordResetOtp(
+    email: String!
+    otp: String!
+  ): VerifyResetPasswordOtpResponse!
 
   # Admin
   updateUserOrderStatus(
@@ -36,7 +40,7 @@ type Mutation {
     newPassword: String!
     reenterPassword: String!
   ): ResetPasswordResponse!
-  deleteAccount: DeleteAccountResponse!
+  deleteAccount(email: String!, password: String!): DeleteAccountResponse!
 
   # Product
   addProduct(productInput: ProductInput!): Product!

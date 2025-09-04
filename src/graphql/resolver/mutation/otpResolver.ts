@@ -280,6 +280,41 @@ const otpResolver = {
                 message: "OTP verified. Order placed successfully.",
             };
         },
+
+        verifyPasswordResetOtp: async (
+            _: unknown,
+            args: { email: string; otp: string },
+        ): Promise<{ success: boolean; message: string }> => {
+
+            const { email, otp } = args;
+
+            // Find OTP document
+            const otpDoc = await OTPModel.findOne({ verificationIdentifier: email });
+            if (!otpDoc) {
+                return {
+                    success: false,
+                    message: "OTP has expired or not requested.",
+                };
+            }
+
+            // Compare OTP
+            const isMatch = await otpDoc.compareOTP(otp);
+            if (!isMatch) {
+                return {
+                    success: false,
+                    message: "Invalid OTP.",
+                };
+            }
+
+            // Delete OTP after successful verification
+            await OTPModel.deleteOne({ verificationIdentifier: email });
+
+            return {
+                success: true,
+                message: "OTP verified. You can now reset your password.",
+            };
+        },
+
     },
 };
 

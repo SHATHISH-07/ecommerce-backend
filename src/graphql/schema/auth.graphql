@@ -28,3 +28,8 @@ type ResendEmailOtpResponse {
   message: String!
   success: Boolean!
 }
+
+type VerifyResetPasswordOtpResponse {
+  success: Boolean!
+  message: String!
+}

@@ -74,7 +74,6 @@ const userResolver = {
             return formatUser(user);
         },
 
-
         updatePassword: async (
             _: unknown,
             args: { currentPassword: string; newPassword: string },
@@ -82,14 +81,11 @@ const userResolver = {
         ): Promise<{ success: boolean; message: string }> => {
             try {
 
-                // console.log("updatePassword context", context);
-
                 const currentUser = getCurrentUser(context);
 
                 if (!currentUser) {
                     return { success: false, message: "Authentication required." };
                 }
-
 
                 const user = await userModel.findById(currentUser.userId);
                 if (!user) {
@@ -101,11 +97,9 @@ const userResolver = {
                     return { success: false, message: "Current password is incorrect." };
                 }
 
-                const salt = await bcrypt.genSalt(10);
-                user.password = await bcrypt.hash(args.newPassword, salt);
-
-
+                user.password = args.newPassword;
                 await user.save();
+
 
                 return { success: true, message: "Password updated successfully." };
             } catch (err) {
@@ -123,9 +117,11 @@ const userResolver = {
 
             const otp = otpGenerator();
 
+            const hashedOtp = await bcrypt.hash(otp, 10);
+
             await OTPModel.findOneAndUpdate(
                 { verificationIdentifier: email },
-                { otp, createdAt: new Date() },
+                { otp: hashedOtp, createdAt: new Date() },
                 { upsert: true, new: true }
             );
 
@@ -155,8 +151,7 @@ const userResolver = {
                 return { success: false, message: "User not found." };
             }
 
-            const salt = await bcrypt.genSalt(10);
-            user.password = await bcrypt.hash(newPassword, salt);
+            user.password = newPassword;
 
             await user.save();
 
@@ -165,28 +160,39 @@ const userResolver = {
 
         deleteAccount: async (
             _: unknown,
-            __: unknown,
+            args: { email: string; password: string },
             context: MyContext
-        ): Promise<{ success: boolean, message: string }> => {
+        ): Promise<{ success: boolean; message: string }> => {
             try {
                 const currentUser = getCurrentUser(context);
 
                 if (!currentUser) {
-                    throw new Error("Authentication required.");
+                    return { success: false, message: "Authentication required." };
                 }
 
-                const user = await userModel.findByIdAndDelete(currentUser.userId);
-
+                const user = await userModel.findById(currentUser.userId);
                 if (!user) {
-                    throw new Error("User not found.");
+                    return { success: false, message: "User not found." };
                 }
+
+                if (args.email !== user.email) {
+                    return { success: false, message: "email does not match." };
+                }
+
+                const isMatch = await user.comparePassword(args.password);
+                if (!isMatch) {
+                    return { success: false, message: "Password is incorrect." };
+                }
+
+                await user.deleteOne();
 
                 return { success: true, message: "Account deleted successfully." };
-            } catch (error) {
-                console.error("Delete Account Error:", error); // helpful for debugging
+            } catch (err) {
+                console.error("Delete Account Error:", err);
                 return { success: false, message: "Something went wrong." };
             }
         }
+
 
     },
 }
