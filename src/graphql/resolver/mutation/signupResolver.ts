@@ -1,3 +1,4 @@
+import bcrypt from "bcrypt";
 import OTPModel from "../../../models/OTPModel";
 import pendingUserModel from "../../../models/pendingUserModel";
 import UserModel from "../../../models/userModel";
@@ -68,9 +69,11 @@ const signupResolver = {
 
             const message = "Signup Verification OTP";
 
+            const hashedOtp = await bcrypt.hash(otp, 10);
+
             await OTPModel.findOneAndUpdate(
                 { verificationIdentifier },
-                { otp, createdAt: new Date() },
+                { otp: hashedOtp, createdAt: new Date() },
                 { upsert: true, new: true }
             );
 

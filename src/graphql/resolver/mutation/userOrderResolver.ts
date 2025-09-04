@@ -1,3 +1,4 @@
+import bcrypt from "bcrypt";
 import PendingOrderModel from "../../../models/pendingOrderModel";
 import OTPModel from "../../../models/OTPModel";
 import { MyContext, PaymentMethod, ShippingAddress, UserOrder, userOrderInput } from "../../../types";
@@ -66,9 +67,11 @@ const userOrderResolver = {
                 "Place order verification OTP"
             )
 
+            const hashedOtp = await bcrypt.hash(otp, 10);
+
             await OTPModel.findOneAndUpdate(
                 { verificationIdentifier: shippingAddress.email },
-                { otp, createdAt: new Date() },
+                { otp: hashedOtp, createdAt: new Date() },
                 { upsert: true, new: true }
             );
 
@@ -152,9 +155,11 @@ const userOrderResolver = {
                 "Place order verification OTP"
             )
 
+            const hashedOtp = await bcrypt.hash(otp, 10);
+
             await OTPModel.findOneAndUpdate(
                 { verificationIdentifier: shippingAddress.email },
-                { otp, createdAt: new Date() },
+                { otp: hashedOtp, createdAt: new Date() },
                 { upsert: true, new: true }
             );
 

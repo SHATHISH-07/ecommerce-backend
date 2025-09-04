@@ -58,9 +58,12 @@ const userResolver = {
             user.emailVerified = false;
 
             const otp = otpGenerator();
+
+            const hashedOtp = await bcrypt.hash(otp, 10);
+
             await OTPModel.findOneAndUpdate(
                 { verificationIdentifier: email },
-                { otp, createdAt: new Date() },
+                { otp: hashedOtp, createdAt: new Date() },
                 { upsert: true, new: true }
             );
 

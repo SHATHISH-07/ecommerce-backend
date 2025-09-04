@@ -178,12 +178,10 @@ const userResolver = {
 
             order.orderStatus = newStatus;
 
-            // Mark COD orders as paid on delivery
             if (newStatus === "Delivered" && order.paymentMethod === "Cash_on_Delivery") {
                 order.paymentStatus = "Paid";
             }
 
-            // Special logic only when Delivered
             if (newStatus === "Delivered") {
                 const user = await userModel.findById(order.userId);
                 if (!user) {
@@ -193,18 +191,16 @@ const userResolver = {
                 for (const product of order.products) {
                     const { returnPolicy, externalProductId, title } = product;
 
-                    // Default: no expiry
                     let expiryDate: Date | null = null;
 
                     if (returnPolicy === "No return policy") {
-                        // Keep in DB for 2 days, then remove
                         expiryDate = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000);
 
                         await sendEmailNoReturnPolicy(
                             user.name,
                             order.shippingAddress.email,
                             `Thanks for purchasing ${title}.
-           <br/> ${title} is not eligible for return.`
+                            <br/> ${title} is not eligible for return.`
                         );
                     } else {
                         const returnDays = extractReturnDays(returnPolicy);
@@ -213,14 +209,13 @@ const userResolver = {
                         }
                     }
 
-                    // Persist expiry in DB for each product
                     if (expiryDate) {
-                        product.returnExpiresAt = expiryDate; // <-- add this field in schema if not already
+                        product.returnExpiresAt = expiryDate;
                     }
                 }
-
-                await order.save();
             }
+
+            await order.save();
 
             await sendOrderStatusEmail(
                 order.shippingAddress.name,
@@ -228,7 +223,7 @@ const userResolver = {
                 order.id,
                 Date.now(),
                 `Your product has been <b>${order.orderStatus}</b>.
-     <br/> Any further updates will be sent to your email.`
+                <br/> Any further updates will be sent to your email.`
             );
 
             return {
@@ -236,6 +231,7 @@ const userResolver = {
                 message: `Order status updated successfully to ${order.orderStatus}`,
             };
         },
+
 
 
         initiateRefundOrder: async (

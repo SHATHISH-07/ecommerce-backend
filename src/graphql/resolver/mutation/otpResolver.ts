@@ -207,6 +207,7 @@ const otpResolver = {
             const { email, otp } = args;
 
             const otpDoc = await OTPModel.findOne({ verificationIdentifier: email });
+
             if (!otpDoc) {
                 return {
                     success: false,
