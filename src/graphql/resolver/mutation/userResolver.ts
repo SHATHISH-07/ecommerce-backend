@@ -49,7 +49,6 @@ const userResolver = {
                 throw new Error("New email must be different from the current email.");
             }
 
-            // ✅ ensure email is not already taken
             const existingUser = await userModel.findOne({ email });
             if (existingUser && existingUser.id !== user.id) {
                 throw new Error("Email is already in use.");
@@ -59,8 +58,12 @@ const userResolver = {
             user.emailVerified = false;
 
             const otp = otpGenerator();
-            await OTPModel.deleteMany({ verificationIdentifier: email });
-            await OTPModel.create({ verificationIdentifier: email, otp });
+            await OTPModel.findOneAndUpdate(
+                { verificationIdentifier: email },
+                { otp, createdAt: new Date() },
+                { upsert: true, new: true }
+            );
+
 
             await sendOtpEmail(email, otp, "Email Updated Verification OTP");
             await user.save();
@@ -96,8 +99,8 @@ const userResolver = {
                 }
 
                 const salt = await bcrypt.genSalt(10);
-                const hashedPassword = await bcrypt.hash(args.newPassword, salt);
-                user.password = hashedPassword;
+                user.password = await bcrypt.hash(args.newPassword, salt);
+
 
                 await user.save();
 
@@ -111,70 +114,50 @@ const userResolver = {
         initiateResetPassword: async (
             _: unknown,
             args: { email: string },
-            context: MyContext
         ): Promise<{ success: boolean; message: string }> => {
-
             const { email } = args;
-
-            if (!email) {
-                throw new Error("User not authenticated.");
-            }
+            if (!email) throw new Error("Email is required.");
 
             const otp = otpGenerator();
 
-            const message = "Reset Password Verification OTP";
+            await OTPModel.findOneAndUpdate(
+                { verificationIdentifier: email },
+                { otp, createdAt: new Date() },
+                { upsert: true, new: true }
+            );
 
-            await OTPModel.deleteMany({ verificationIdentifier: email });
+            await sendOtpEmail(email, otp, "Reset Password Verification OTP");
 
-            await OTPModel.create({ verificationIdentifier: email, otp });
-
-            await sendOtpEmail(email, otp, message);
-
-            return {
-                success: true,
-                message: "OTP sent to your registered email.",
-            };
+            return { success: true, message: "OTP sent to your registered email." };
         },
+
 
         resetPassword: async (
             _: unknown,
             args: { email: string; newPassword: string; reenterPassword: string },
-            ___: unknown
         ): Promise<{ success: boolean; message: string }> => {
-
             const { email, newPassword, reenterPassword } = args;
 
-            // Ensure no OTP record exists → OTP must be verified
-            const otpStillThere = await OTPModel.findOne({ email });
+            const otpStillThere = await OTPModel.findOne({ verificationIdentifier: email });
             if (otpStillThere) {
-                return {
-                    success: false,
-                    message: "OTP verification required before resetting password.",
-                };
+                return { success: false, message: "OTP verification required before resetting password." };
             }
 
             if (newPassword !== reenterPassword) {
-                return {
-                    success: false,
-                    message: "Passwords do not match.",
-                };
+                return { success: false, message: "Passwords do not match." };
             }
 
             const user = await userModel.findOne({ email });
             if (!user) {
-                return {
-                    success: false,
-                    message: "User not found.",
-                };
+                return { success: false, message: "User not found." };
             }
 
-            user.password = newPassword;
+            const salt = await bcrypt.genSalt(10);
+            user.password = await bcrypt.hash(newPassword, salt);
+
             await user.save();
 
-            return {
-                success: true,
-                message: "Password has been reset successfully.",
-            };
+            return { success: true, message: "Password has been reset successfully." };
         },
 
         deleteAccount: async (

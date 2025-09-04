@@ -66,11 +66,12 @@ const userOrderResolver = {
                 "Place order verification OTP"
             )
 
-            const newOtpEntry = new OTPModel({
-                verificationIdentifier: shippingAddress.email,
-                otp,
-            });
-            await newOtpEntry.save();
+            await OTPModel.findOneAndUpdate(
+                { verificationIdentifier: shippingAddress.email },
+                { otp, createdAt: new Date() },
+                { upsert: true, new: true }
+            );
+
 
             return {
                 message: "OTP sent to your email. Please verify to place the order.",
@@ -151,11 +152,11 @@ const userOrderResolver = {
                 "Place order verification OTP"
             )
 
-            const newOtpEntry = new OTPModel({
-                verificationIdentifier: shippingAddress.email,
-                otp,
-            });
-            await newOtpEntry.save();
+            await OTPModel.findOneAndUpdate(
+                { verificationIdentifier: shippingAddress.email },
+                { otp, createdAt: new Date() },
+                { upsert: true, new: true }
+            );
 
             return {
                 message: "OTP sent to your email. Please verify to place the order.",

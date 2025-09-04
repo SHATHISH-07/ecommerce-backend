@@ -54,7 +54,7 @@ const authResolvers = {
                     role: user.role,
                 },
                 secret,
-                { expiresIn: "1d" }
+                { expiresIn: "7d" }
             );
 
             return {

@@ -1,3 +1,4 @@
+import { AuthenticationError } from "apollo-server-express";
 import userModel from "../../../models/userModel";
 import { UserModelWithoutPassword, Role, MyContext } from "../../../types";
 import { getCurrentUser } from "../../../utils/getUser";
@@ -16,7 +17,7 @@ const getUserResolver = {
             // console.log("query context", context)
 
             const currentUser = getCurrentUser(context);
-            if (!currentUser) throw new Error("Not authenticated");
+            if (!currentUser) throw new AuthenticationError("Not authenticated");
             return formatCurrentUser(currentUser);
         },
 

@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import { IncomingMessage } from "http";
 import { TokenPayload, MyContext } from "./types";
 import userModel from "./models/userModel";
+import { AuthenticationError } from "apollo-server-express";
 
 const secret = process.env.SECRET_KEY;
 if (!secret) {
@@ -66,7 +67,7 @@ const context = async ({ req }: ContextType): Promise<MyContext> => {
             };
         } catch (error) {
             console.error("Error verifying token:", error);
-            return {};
+            throw new AuthenticationError("Token expired or invalid");
         }
     }
 

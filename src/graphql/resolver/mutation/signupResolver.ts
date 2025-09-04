@@ -68,12 +68,12 @@ const signupResolver = {
 
             const message = "Signup Verification OTP";
 
-            const newOtp = new OTPModel({
-                verificationIdentifier,
-                otp,
-            });
+            await OTPModel.findOneAndUpdate(
+                { verificationIdentifier },
+                { otp, createdAt: new Date() },
+                { upsert: true, new: true }
+            );
 
-            await newOtp.save();
 
             await sendOtpEmail(email, otp, message);
 
