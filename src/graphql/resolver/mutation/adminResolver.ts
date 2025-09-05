@@ -1,10 +1,12 @@
 import OrderModel from "../../../models/placeOrderModel";
 import userModel from "../../../models/userModel";
-import { Role, MyContext, UserModelWithoutPassword, OrderStatus, PaymentMethod } from "../../../types";
+import { Role, MyContext, UserModelWithoutPassword, OrderStatus, PaymentMethod, Banner, UpdateBannerArgs, AddBannerArgs, DeleteBannerArgs } from "../../../types";
 import { getCurrentUser } from "../../../utils/getUser";
 import extractReturnDays from "../../../utils/returnDays";
 import { sendEmailNoReturnPolicy, sendOrderStatusEmail } from "../../../utils/sendEmail";
 import { formatUser } from "../../../utils/userReturn";
+import BannerModel from "../../../models/bannerModel";
+import { Types } from "mongoose";
 
 
 
@@ -305,7 +307,74 @@ const userResolver = {
                 success: true,
                 message: "Refund completed and order removed.",
             };
-        }
+        },
+        addBanner: async (
+            _: unknown,
+            args: AddBannerArgs,
+            context: MyContext
+        ): Promise<Banner> => {
+            const user = getCurrentUser(context);
+
+            if (!user || user.role !== "admin") {
+                throw new Error("Only admins can add banner.");
+            }
+
+            const bannerDoc = new BannerModel({ ...args });
+            const saved = await bannerDoc.save();
+
+            return {
+                id: (saved._id as Types.ObjectId).toHexString(),
+                imageUrl: saved.imageUrl,
+                title: saved.title,
+                description: saved.description,
+                link: saved.link,
+                isActive: saved.isActive,
+                createdAt: saved.createdAt.toISOString(),
+            };
+        },
+
+        updateBanner: async (
+            _: unknown,
+            args: UpdateBannerArgs,
+            context: MyContext
+        ): Promise<Banner | null> => {
+            const user = getCurrentUser(context);
+
+            if (!user || user.role !== "admin") {
+                throw new Error("Only admins can update banner.");
+            }
+
+            const updated = await BannerModel.findByIdAndUpdate(args.id, args, {
+                new: true,
+            });
+
+            if (!updated) return null;
+
+            return {
+                id: (updated._id as Types.ObjectId).toHexString(),
+                imageUrl: updated.imageUrl,
+                title: updated.title,
+                description: updated.description,
+                link: updated.link,
+                isActive: updated.isActive,
+                createdAt: updated.createdAt.toISOString(),
+            };
+        },
+
+        deleteBanner: async (
+            _: unknown,
+            args: DeleteBannerArgs,
+            context: MyContext
+        ): Promise<boolean> => {
+            const user = getCurrentUser(context);
+
+            if (!user || user.role !== "admin") {
+                throw new Error("Only admins can delete banner.");
+            }
+
+            const deleted = await BannerModel.findByIdAndDelete(args.id);
+            return !!deleted;
+        },
     }
 
 }

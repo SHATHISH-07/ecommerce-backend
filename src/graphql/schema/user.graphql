@@ -108,3 +108,13 @@ type AdminDashboardStats {
 input UpdateUserEmailInput {
   email: String!
 }
+
+type Banner {
+  id: ID!
+  imageUrl: String!
+  title: String
+  description: String
+  link: String
+  isActive: Boolean!
+  createdAt: String!
+}

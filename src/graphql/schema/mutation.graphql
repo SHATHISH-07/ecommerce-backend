@@ -71,4 +71,23 @@ type Mutation {
   ): PlaceOrderResponse!
   cancelOrder(orderId: String!, reason: String!): CancelOrderResponse!
   returnOrder(orderId: String!, reason: String!): ReturnOrderResponse!
+
+  # Banner
+  addBanner(
+    imageUrl: String!
+    title: String
+    description: String
+    link: String
+  ): Banner!
+
+  updateBanner(
+    id: ID!
+    imageUrl: String
+    title: String
+    description: String
+    link: String
+    isActive: Boolean
+  ): Banner
+
+  deleteBanner(id: ID!): Boolean!
 }

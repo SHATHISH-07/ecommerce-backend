@@ -2,9 +2,11 @@ import categoryModel from "../../../models/categoryModel";
 import OrderModel from "../../../models/placeOrderModel";
 import productModel from "../../../models/productModel";
 import userModel from "../../../models/userModel";
-import { UserModelWithoutPassword, MyContext, OrderedProduct, UserOrder } from "../../../types";
+import { UserModelWithoutPassword, MyContext, OrderedProduct, UserOrder, Banner } from "../../../types";
 import { getCurrentUser } from "../../../utils/getUser";
 import { formatUser } from "../../../utils/userReturn";
+import BannerModel from "../../../models/bannerModel"
+import { Types } from "mongoose";
 
 
 const getAdminResolver = {
@@ -196,7 +198,21 @@ const getAdminResolver = {
                 bannedUsers,
                 deactivatedUsers
             };
-        }
+        },
+
+        getAllBanners: async (_: unknown, __: unknown): Promise<Banner[]> => {
+            const docs = await BannerModel.find().sort({ createdAt: -1 }).lean();
+
+            return docs.map((doc) => ({
+                id: (doc._id as Types.ObjectId).toHexString(),
+                imageUrl: doc.imageUrl,
+                title: doc.title,
+                description: doc.description,
+                link: doc.link,
+                isActive: doc.isActive,
+                createdAt: doc.createdAt.toISOString(),
+            }));
+        },
 
     }
 };

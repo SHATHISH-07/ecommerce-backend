@@ -36,4 +36,7 @@ type Query {
   getAllOrdersAdmin: [UserOrder]
   getAllOrderByStatusAdmin(status: String!): [UserOrder!]
   getAdminDashboardStats: AdminDashboardStats!
+
+  # Banner
+  getAllBanners: [Banner!]!
 }

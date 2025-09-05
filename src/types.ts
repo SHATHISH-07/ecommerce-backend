@@ -359,5 +359,36 @@ export interface BulkCategoryResponse {
     total: number;
 }
 
+// Banner
+
+export interface Banner {
+    id: string;
+    imageUrl: string;
+    title?: string;
+    description?: string;
+    link?: string;
+    isActive: boolean;
+    createdAt: string;
+}
+
+export interface AddBannerArgs {
+    imageUrl: string;
+    title?: string;
+    description?: string;
+    link?: string;
+}
+
+export interface UpdateBannerArgs {
+    id: string;
+    imageUrl?: string;
+    title?: string;
+    description?: string;
+    link?: string;
+    isActive?: boolean;
+}
+
+export interface DeleteBannerArgs {
+    id: string;
+}
 
 
