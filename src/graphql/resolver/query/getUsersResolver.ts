@@ -8,6 +8,12 @@ import { formatCurrentUser, formatUser } from "../../../utils/userReturn";
 
 const getUserResolver = {
     Query: {
+
+        ping: async () => {
+            console.log("Ping received at", new Date());
+            return true;
+        },
+
         getCurrentUser: async (
             _: unknown,
             __: unknown,

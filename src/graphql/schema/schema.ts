@@ -98,6 +98,9 @@ type Mutation {
 }
 
 type Query {
+
+  ping: Boolean!
+
   # Users
   getCurrentUser: UserWithoutPassword!
   getUser(username: String, email: String, userId: String): UserWithoutPassword!
