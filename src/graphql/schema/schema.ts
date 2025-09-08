@@ -535,9 +535,7 @@ input UpdateProductInput {
   weight: Float
   dimensions: UpdateDimensionsInput
   warrantyInformation: String
-  shippingInformation: String
   availabilityStatus: String
-  reviews: [UpdateReviewInput!]
   returnPolicy: String
   minimumOrderQuantity: Int
   meta: UpdateMetaInput

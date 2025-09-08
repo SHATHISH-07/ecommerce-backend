@@ -168,11 +168,8 @@ const ProductResolver = {
                         ...productDoc.meta,
                         ...value,
                     };
-                } else if (key === "reviews" && Array.isArray(value)) {
-                    productDoc.reviews = value.map((review) => ({
-                        ...review,
-                    }));
-                } else {
+                }
+                else {
                     (productDoc as any)[key] = value;
                 }
             });
