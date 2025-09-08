@@ -74,16 +74,24 @@ const productSchema = new Schema<ProductDoc>(
 
 productSchema.pre("save", async function (next) {
     if (this.isNew && typeof this.id === "undefined") {
-        const lastProduct = await mongoose
+        const products = await mongoose
             .model<ProductDoc>("Product")
-            .findOne({})
-            .sort({ id: -1 })
-            .select("id")
-            .exec();
+            .find({})
+            .sort({ id: 1 })
+            .select("id");
 
-        this.id = lastProduct?.id ? lastProduct.id + 1 : 1;
+        let expectedId = 1;
+        for (const product of products) {
+            if (product.id !== expectedId) {
+                break;
+            }
+            expectedId++;
+        }
+
+        this.id = expectedId; // s
     }
     next();
 });
+
 
 export default mongoose.model<ProductDoc>("Product", productSchema);
