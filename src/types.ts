@@ -291,7 +291,6 @@ export interface UpdateProductInput {
     sku: string;
     weight: number;
     dimensions: Dimensions;
-    reviews: Review[];
     warrantyInformation: string;
     shippingInformation: string;
     availabilityStatus: string;

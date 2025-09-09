@@ -514,7 +514,6 @@ input ProductInput {
   warrantyInformation: String!
   shippingInformation: String!
   availabilityStatus: String!
-  reviews: [ReviewInput!]!
   returnPolicy: String!
   minimumOrderQuantity: Int!
   meta: MetaInput!
