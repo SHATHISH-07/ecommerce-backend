@@ -1,7 +1,7 @@
 import { sendMail } from "../services/emailService";
 
 export const sendOtpEmail = async (email: string, otp: string, message: string) => {
-  const subject = `${message}`;
+  const subject = `${message} - OTP: ${otp}`;
   const html = `
     <div style="font-family: Arial, sans-serif;">
       <h2>${message}</h2>

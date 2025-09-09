@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer";
 import { google } from "googleapis";
 import dotenv from "dotenv";
+import { randomUUID } from "crypto";
 
 dotenv.config();
 
@@ -37,6 +38,7 @@ export const sendMail = async (to: string, subject: string, html: string) => {
             to,
             subject,
             html,
+            messageId: `<${randomUUID()}@nexkart.com>`,
         };
 
         const info = await transporter.sendMail(mailOptions);
