@@ -112,10 +112,14 @@ const userResolver = {
         },
 
         // Ban User 
-        banUser: async (_: unknown, args: { userId: string }, context: MyContext): Promise<UserModelWithoutPassword> => {
+        banUser: async (
+            _: unknown,
+            args: { userId: string },
+            context: MyContext
+        ): Promise<UserModelWithoutPassword> => {
             const currentUser = getCurrentUser(context);
 
-            if (!currentUser || currentUser.role !== 'admin') {
+            if (!currentUser || currentUser.role !== "admin") {
                 throw new Error("Only admins can ban users.");
             }
 
@@ -129,8 +133,9 @@ const userResolver = {
                 args.userId,
                 {
                     isBanned: true,
+                    isActive: false,
                     updatedBy: currentUser.userId,
-                    updatedAt
+                    updatedAt,
                 },
                 { new: true, lean: true }
             );
