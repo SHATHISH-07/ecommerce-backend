@@ -365,7 +365,6 @@ export interface Banner {
     imageUrl: string;
     title?: string;
     description?: string;
-    link?: string;
     isActive: boolean;
     createdAt: string;
 }
@@ -374,7 +373,6 @@ export interface AddBannerArgs {
     imageUrl: string;
     title?: string;
     description?: string;
-    link?: string;
 }
 
 export interface UpdateBannerArgs {
@@ -382,7 +380,6 @@ export interface UpdateBannerArgs {
     imageUrl?: string;
     title?: string;
     description?: string;
-    link?: string;
     isActive?: boolean;
 }
 

@@ -82,7 +82,6 @@ type Mutation {
     imageUrl: String!
     title: String
     description: String
-    link: String
   ): Banner!
 
   updateBanner(
@@ -90,7 +89,6 @@ type Mutation {
     imageUrl: String
     title: String
     description: String
-    link: String
     isActive: Boolean
   ): Banner
 
@@ -141,6 +139,7 @@ type Query {
 
   # Banner
   getAllBanners: [Banner!]!
+  getBannerById(id: String!): Banner!
 }
 
 type LoginUser {
@@ -713,7 +712,6 @@ type Banner {
   imageUrl: String!
   title: String
   description: String
-  link: String
   isActive: Boolean!
   createdAt: String!
 }

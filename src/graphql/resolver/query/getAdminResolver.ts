@@ -208,10 +208,24 @@ const getAdminResolver = {
                 imageUrl: doc.imageUrl,
                 title: doc.title,
                 description: doc.description,
-                link: doc.link,
                 isActive: doc.isActive,
                 createdAt: doc.createdAt.toISOString(),
             }));
+        },
+
+        getBannerById: async (_: unknown, args: { id: string }): Promise<Banner | null> => {
+            const doc = await BannerModel.findById(args.id).lean();
+
+            if (!doc) return null;
+
+            return {
+                id: (doc._id as Types.ObjectId).toHexString(),
+                imageUrl: doc.imageUrl,
+                title: doc.title,
+                description: doc.description,
+                isActive: doc.isActive,
+                createdAt: doc.createdAt.toISOString(),
+            };
         },
 
     }

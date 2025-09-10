@@ -14,7 +14,6 @@ const BannerSchema = new Schema<BannerDoc>({
     imageUrl: { type: String, required: true },
     title: { type: String },
     description: { type: String },
-    link: { type: String },
     isActive: { type: Boolean, default: true },
     createdAt: { type: Date, default: Date.now },
 });

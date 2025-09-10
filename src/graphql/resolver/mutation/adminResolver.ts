@@ -332,7 +332,6 @@ const userResolver = {
                 imageUrl: saved.imageUrl,
                 title: saved.title,
                 description: saved.description,
-                link: saved.link,
                 isActive: saved.isActive,
                 createdAt: saved.createdAt.toISOString(),
             };
@@ -360,7 +359,6 @@ const userResolver = {
                 imageUrl: updated.imageUrl,
                 title: updated.title,
                 description: updated.description,
-                link: updated.link,
                 isActive: updated.isActive,
                 createdAt: updated.createdAt.toISOString(),
             };
