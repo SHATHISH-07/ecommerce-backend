@@ -241,7 +241,7 @@ const userResolver = {
 
 
 
-        initiateRefundOrder: async (
+        initiateOrConfirmRefundOrder: async (
             _: unknown,
             args: { orderId: string },
             context: MyContext
@@ -249,7 +249,7 @@ const userResolver = {
             const currentUser = getCurrentUser(context);
 
             if (!currentUser || currentUser.role !== "admin") {
-                throw new Error("Only admins can initiate a refund.");
+                throw new Error("Only admins can perform this action.");
             }
 
             const { orderId } = args;
@@ -260,59 +260,43 @@ const userResolver = {
             }
 
             if (order.orderStatus === "Refunded") {
-                throw new Error("Refund has already been initiated.");
+                return {
+                    success: true,
+                    message: "Order is already refunded.",
+                };
             }
 
+            // Update order status
             order.orderStatus = "Refunded";
             await order.save();
 
-            await sendOrderStatusEmail(
-                order.shippingAddress.name,
-                order.shippingAddress.email,
-                orderId,
-                Date.now(),
-                "Refund has been initiated. Amount will be credited to your account within 2–3 working days."
-            );
+            try {
+                // Send refund email first
+                await sendOrderStatusEmail(
+                    order.shippingAddress.name,
+                    order.shippingAddress.email,
+                    orderId,
+                    Date.now(),
+                    "Refund has been initiated. Amount has been credited to your account."
+                );
 
-            return {
-                success: true,
-                message: "Refund initiated successfully.",
-            };
+                // Only delete after email is successfully sent
+                await OrderModel.findByIdAndDelete(orderId);
+
+                return {
+                    success: true,
+                    message: "Refund initiated successfully, email sent, and order deleted.",
+                };
+            } catch (err) {
+                // If email fails, do not delete the order
+                console.error("Error sending refund email:", err);
+                return {
+                    success: false,
+                    message: "Refund could not be completed because email failed.",
+                };
+            }
         },
 
-        confirmRefundOrder: async (
-            _: unknown,
-            args: { orderId: string },
-            context: MyContext
-        ): Promise<{ success: boolean; message: string }> => {
-            const currentUser = getCurrentUser(context);
-
-            if (!currentUser || currentUser.role !== "admin") {
-                throw new Error("Only admins can confirm a refund.");
-            }
-
-            const { orderId } = args;
-
-            const order = await OrderModel.findById(orderId);
-            if (!order) {
-                throw new Error("Order not found.");
-            }
-
-            await sendOrderStatusEmail(
-                order.shippingAddress.name,
-                order.shippingAddress.email,
-                orderId,
-                Date.now(),
-                "Your refund has been successfully processed and the amount has been credited to your account."
-            );
-
-            await OrderModel.findByIdAndDelete(orderId);
-
-            return {
-                success: true,
-                message: "Refund completed and order removed.",
-            };
-        },
         addBanner: async (
             _: unknown,
             args: AddBannerArgs,

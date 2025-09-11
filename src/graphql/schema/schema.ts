@@ -21,8 +21,7 @@ type Mutation {
     orderId: String!
     newStatus: OrderStatus!
   ): UpdateUserOrderStatusResponse!
-  initiateRefundOrder(orderId: String!): RefundOrderResponse!
-  confirmRefundOrder(orderId: String!): RefundOrderResponse!
+  initiateOrConfirmRefundOrder(orderId: String!): RefundOrderResponse!
 
   # User
   updateUserRole(userId: ID!, newRole: Role!): UserWithoutPassword!
