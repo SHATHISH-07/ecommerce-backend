@@ -56,6 +56,8 @@ const UserPendingOrderSchema = new Schema<UserPendingOrderDocument>(
     }
 );
 
+UserPendingOrderSchema.index({ createdAt: 1 }, { expireAfterSeconds: 300 });
+
 UserPendingOrderSchema.pre("save", function (next) {
     const doc = this as UserPendingOrderDocument;
 
