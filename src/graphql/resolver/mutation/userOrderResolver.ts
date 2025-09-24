@@ -8,6 +8,7 @@ import { sendOrderStatusEmail, sendOtpEmail } from "../../../utils/sendEmail";
 import OrderModel from "../../../models/placeOrderModel";
 import Cart from "../../../models/cartModel";
 import productModel from "../../../models/productModel";
+import userModel from "../../../models/userModel";
 
 
 const userOrderResolver = {
@@ -282,20 +283,49 @@ const userOrderResolver = {
             const now = new Date();
             const deliveredDate = new Date(order.deliveredAt);
 
-            const returnableProducts = order.products.filter(product => {
+            const returnableProducts: typeof order.products = [];
+            const expiredProducts: typeof order.products = [];
+
+            for (const product of order.products) {
                 const policy = product.returnPolicy?.toLowerCase();
-                if (!policy || policy === "no return policy") return false;
+                if (!policy || policy === "no return policy") {
+                    expiredProducts.push(product);
+                    continue;
+                }
 
                 const match = policy.match(/(\d+)\s*days/);
-                if (!match) return false;
+                if (!match) {
+                    expiredProducts.push(product);
+                    continue;
+                }
 
                 const returnDays = parseInt(match[1]);
-                const deadline = new Date(deliveredDate.getTime() + returnDays * 24 * 60 * 60 * 1000);
+                const deadline = new Date(
+                    deliveredDate.getTime() + returnDays * 24 * 60 * 60 * 1000
+                );
 
-                return now <= deadline;
-            });
+                if (now <= deadline) {
+                    returnableProducts.push(product);
+                } else {
+                    expiredProducts.push(product);
+                }
+            }
 
             if (returnableProducts.length === 0) {
+                // Track expired products in user order history
+                if (expiredProducts.length > 0) {
+                    const user = await userModel.findById(order.userId);
+                    if (user) {
+                        expiredProducts.forEach((prod) => {
+                            user.userOrderHistory.push({
+                                orderId: prod.externalProductId,
+                                placedAt: order.placedAt,
+                            });
+                        });
+                        await user.save();
+                    }
+                }
+
                 await sendOrderStatusEmail(
                     order.shippingAddress.name,
                     order.shippingAddress.email,
@@ -303,13 +333,29 @@ const userOrderResolver = {
                     now.getTime(),
                     `Order cannot be returned as none of the products are returnable or the return period has expired.`
                 );
+
                 throw new Error("No returnable products found or return window expired.");
+            }
+
+            order.products = returnableProducts;
+
+            if (expiredProducts.length > 0) {
+                const user = await userModel.findById(order.userId);
+                if (user) {
+                    expiredProducts.forEach((prod) => {
+                        user.userOrderHistory.push({
+                            orderId: prod.externalProductId,
+                            placedAt: order.placedAt,
+                        });
+                    });
+                    await user.save();
+                }
             }
 
             order.orderStatus = "Returned";
             order.returnedOrder = {
                 returnedAt: now,
-                returnedOrderReason: reason
+                returnedOrderReason: reason,
             };
 
             await order.save();
@@ -324,9 +370,10 @@ const userOrderResolver = {
 
             return {
                 success: true,
-                message: `Order has been returned successfully. Reason: ${reason}`
+                message: `Order has been returned successfully. Reason: ${reason}`,
             };
         }
+
     }
 }
 
