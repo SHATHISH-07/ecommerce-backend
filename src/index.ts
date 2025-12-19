@@ -1,6 +1,6 @@
 import "dotenv/config";
 import mongoose from "mongoose";
-import { startApolloServer } from "./src/app";
+import { startApolloServer } from "./app";
 
 const mongoUri = process.env.MONGO_URI;
 
