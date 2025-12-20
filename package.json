@@ -25,7 +25,8 @@
     "jsonwebtoken": "^9.0.2",
     "koa": "^3.0.1",
     "mongoose": "^8.16.1",
-    "nodemailer": "^7.0.5"
+    "nodemailer": "^7.0.5",
+    "resend": "^6.6.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",

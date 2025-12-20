@@ -275,14 +275,6 @@ const otpResolver = {
                 PendingOrderModel.deleteOne({ _id: pendingOrder._id }),
             ]);
 
-            console.log("4. Verify request received");
-            console.log("5. userId:", pendingOrder.userId);
-            console.log("6. OTP received:", otp);
-
-            const record = await PendingOrderModel.findOne({ userId: pendingOrder.userId });
-            console.log("7. DB record:", record);
-
-
             return {
                 success: true,
                 message: "OTP verified. Order placed successfully.",
