@@ -1,7 +1,4 @@
-import nodemailer from "nodemailer";
-import dotenv from "dotenv";
-
-dotenv.config();
+import axios from "axios";
 
 export const sendMail = async (
     to: string,
@@ -9,26 +6,28 @@ export const sendMail = async (
     html: string
 ) => {
     try {
-        const transporter = nodemailer.createTransport({
-            host: "smtp-relay.brevo.com",
-            port: 587,
-            secure: false,
-            auth: {
-                user: process.env.BREVO_SMTP_USER,
-                pass: process.env.BREVO_SMTP_KEY,
+        await axios.post(
+            "https://api.brevo.com/v3/smtp/email",
+            {
+                sender: {
+                    name: "NexKart",
+                    email: "nexkart.nexkart@gmail.com" // verified sender
+                },
+                to: [{ email: to }],
+                subject,
+                htmlContent: html
             },
-        });
+            {
+                headers: {
+                    "api-key": process.env.BREVO_API_KEY!,
+                    "Content-Type": "application/json"
+                }
+            }
+        );
 
-        const info = await transporter.sendMail({
-            from: "nexkart.nexkart@gmail.com",
-            to,
-            subject,
-            html,
-        });
-
-        console.log("Email sent via Brevo:", info.messageId);
-    } catch (err) {
-        console.error("Brevo email failed:", err);
-        // ❗ DO NOT throw — OTP must still work
+        console.log("Email sent via Brevo API");
+    } catch (err: any) {
+        console.error("Brevo API email failed:", err.response?.data || err.message);
+        // ❗ DO NOT throw
     }
 };
