@@ -76,6 +76,11 @@ const userOrderResolver = {
                 { upsert: true, new: true }
             );
 
+            console.log("1. Order request received");
+            console.log("2. OTP:", otp);
+            console.log("3. PendingOrder saved:", newOrder._id);
+
+
 
             return {
                 message: "OTP sent to your email. Please verify to place the order.",
