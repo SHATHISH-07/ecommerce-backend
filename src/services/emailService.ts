@@ -22,7 +22,9 @@ export const sendMail = async (to: string, subject: string, html: string) => {
         const accessToken = await oauth2Client.getAccessToken();
 
         const transporter = nodemailer.createTransport({
-            service: "gmail",
+            host: "smtp.gmail.com",
+            port: 587,
+            secure: false,
             auth: {
                 type: "OAuth2",
                 user: process.env.GMAIL_SENDER_EMAIL,
@@ -31,6 +33,9 @@ export const sendMail = async (to: string, subject: string, html: string) => {
                 refreshToken: process.env.GMAIL_REFRESH_TOKEN,
                 accessToken: accessToken.token || "",
             },
+            connectionTimeout: 15000,
+            greetingTimeout: 15000,
+            socketTimeout: 15000,
         });
 
         const mailOptions = {
